@@ -9,4 +9,5 @@
 - [ ] Create ability to process NS transactions with 20% discount
 - [ ] Create ability to process RET transactions
 - [ ] Create ability to process 20% 19 Euro transactions
-- [ ] Create ability to process RET & non RET transactions 
+- [ ] Create ability to process RET & non RET transactions
+- [ ] Create ability to calculate fare when there's a 20% discount 
