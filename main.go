@@ -32,12 +32,14 @@ type AuthorisationTokenResponse struct {
 type ApiService struct {
 	clientId string
 	clientSecret string
+	httpClient *http.Client
 }
 
 func New(clientId, clientSecret string) ApiService {
 	return ApiService{
 		clientId:     clientId,
 		clientSecret: clientSecret,
+		httpClient: &http.Client{},
 	}
 }
 
@@ -46,12 +48,12 @@ func (service ApiService) getAuthorisationToken(ctx context.Context, authenticat
 		"authenticationToken": authenticationTokenResponse.IDToken,
 	}
 
-	request, err := createPostRequest(ctx, endpointAuthorisation, payload)
+	request, err := service.createPostRequest(ctx, endpointAuthorisation, payload)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create authorisation request")
 	}
 
-	response, err := doHTTPRequest(request)
+	response, err := service.doHTTPRequest(request)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot perform authorisation request")
 	}
@@ -79,12 +81,12 @@ func (service ApiService) getAuthenticationToken(ctx context.Context, username, 
 		"scope" : "openid",
 	}
 
-	request, err := createPostRequest(ctx, endpointAuthentication, payload)
+	request, err := service.createPostRequest(ctx, endpointAuthentication, payload)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create authentication request")
 	}
 
-	response, err := doHTTPRequest(request)
+	response, err := service.doHTTPRequest(request)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot perform authentication request")
 	}
@@ -102,10 +104,8 @@ func (service ApiService) getAuthenticationToken(ctx context.Context, username, 
 	return authenticationToken, nil
 }
 
-func doHTTPRequest(request *http.Request) (*http.Response, error) {
-	client := &http.Client{}
-
-	apiResponse, err := client.Do(request)
+func (service ApiService) doHTTPRequest(request *http.Request) (*http.Response, error) {
+	apiResponse, err := service.httpClient.Do(request)
 	if err != nil {
 		return nil, errors.Wrapf(err, "cannot execute %s request for %s: ", request.Method, request.URL.String())
 	}
@@ -113,7 +113,7 @@ func doHTTPRequest(request *http.Request) (*http.Response, error) {
 	return apiResponse, nil
 }
 
-func createPostRequest(ctx context.Context, url string, request interface{}) (*http.Request, error) {
+func (service ApiService) createPostRequest(ctx context.Context, url string, request interface{}) (*http.Request, error) {
 	requestBytes, err := json.JsonEncode(request)
 	if err != nil {
 		return nil, errors.Wrapf(err, "cannot serialize request to json %#+v", request)
