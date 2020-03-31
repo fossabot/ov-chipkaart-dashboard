@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 const localeEnglish = "en-EN"

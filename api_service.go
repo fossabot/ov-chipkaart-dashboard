@@ -2,12 +2,13 @@ package main
 
 import (
 	"bytes"
-	"github.com/AchoArnold/homework/services/json"
-	"github.com/pkg/errors"
-	"go.uber.org/ratelimit"
 	"math"
 	"net/http"
 	"time"
+
+	"github.com/AchoArnold/homework/services/json"
+	"github.com/pkg/errors"
+	"go.uber.org/ratelimit"
 )
 
 const endpointAuthentication = "https://login.ov-chipkaart.nl/oauth2/token"
