@@ -123,7 +123,7 @@ func (service ApiService) getTransactions(authorisationToken AuthorisationTokenR
 		EndDate:            nil,
 	}
 
-	transactionsResponse, err := service.getTransactionsWithTimeout(payload)
+	transactionsResponse, err := service.getTransaction(payload)
 	if err != nil {
 		return nil, errors.Wrapf(err, "cannot perform transactions request: payload = %+#v", payload)
 	}
@@ -138,12 +138,11 @@ func (service ApiService) getTransactions(authorisationToken AuthorisationTokenR
 
 	rateLimiter := ratelimit.New(transactionRequestsPerSecond)
 	for i := 1; i < numberOfRequests; i++ {
-		offset := i * requestLimit
-		payload.Offset = &offset
+		payload.Offset = &transactionsResponse.Response.NextRequestContext.Offset
 
 		rateLimiter.Take()
 
-		transactions, err := service.getTransactionsWithTimeout(payload)
+		transactions, err := service.getTransaction(payload)
 		if err != nil {
 			return nil, errors.Wrapf(err, "cannot perform transactions request: payload = %+#v", payload)
 		}
@@ -154,7 +153,7 @@ func (service ApiService) getTransactions(authorisationToken AuthorisationTokenR
 	return &records, nil
 }
 
-func (service ApiService) getTransactionsWithTimeout(payload TransactionsPayload) (transactionsResponse *TransactionsResponse, err error) {
+func (service ApiService) getTransaction(payload TransactionsPayload) (transactionsResponse *TransactionsResponse, err error) {
 	request, err := service.createPostRequest(endpointTransactions, payload)
 	if err != nil {
 		return transactionsResponse, errors.Wrapf(err, "cannot create transactions request: payload = %+#v", payload)
