@@ -39,6 +39,7 @@ func (repository *MongoRawRecordsRepository) Store(records []Record, id Transact
 		}
 
 		valAsMap["transactionId"] = idString
+		valAsMap["createdAt"] = time.Now().UTC().String()
 		documents = append(documents, bson.M(valAsMap))
 	}
 	_, err = repository.db.Collection(collection).InsertMany(context.Background(), documents)
