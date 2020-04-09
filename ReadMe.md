@@ -1,13 +1,18 @@
 ## Plan
 
+### V1
+
 - [X] Create a way to authenticate using the API
 - [X] Modify the API to get transactions within a data range.
 - [X] Create the ability to download all transactions into mongodb
 - [X] Create the ability to convert csv download using the same API
-- [ ] Create Ability to store destination prices for NS in the cache (DB) (map with 2 way keys)
+- [ ] Create ability to store destination prices for NS in the cache (DB) (map with 2 way keys)
 - [ ] Create ability to process NS transactions without discount
 - [ ] Create ability to process NS Free Transactions outside work hours
 - [ ] Create ability to process NS transactions with 20% discount
+
+
+### V2
 - [ ] Create ability to process RET transactions
 - [ ] Create ability to process 20% 19 Euro transactions
 - [ ] Create ability to process RET & non RET transactions

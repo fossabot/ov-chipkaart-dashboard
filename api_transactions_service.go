@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/AchoArnold/homework/services/json"
 	"github.com/pkg/errors"
@@ -23,10 +22,6 @@ const contentTypeFormURLEncoded = "application/x-www-form-urlencoded"
 const responseCodeOk = 200
 
 const transactionRequestsPerSecond = 5
-
-const timeoutAPIRequest = 100 * time.Millisecond
-
-const dateFormat = "2006-01-02"
 
 type authenticationTokenResponse struct {
 	IDToken          string `json:"id_token"`
