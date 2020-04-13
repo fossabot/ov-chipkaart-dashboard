@@ -2,30 +2,23 @@ package main
 
 import (
 	"context"
-	"time"
 
-	"github.com/AchoArnold/homework/services/json"
 	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-const collection = "raw_records"
-
-// MongoRawRecordsRepository is responsible for persisting/loading transactions which have not been processed
-type MongoRawRecordsRepository struct {
-	db *mongo.Database
+// MongodbRawRecordsRepository is responsible for persisting/loading transactions which have not been processed
+type MongodbRawRecordsRepository struct {
+	MongodbRepository
 }
 
-const dbTimeout = 5 * time.Second
-
 // NewRawRecordsRepository is used to initialize this class
-func NewRawRecordsRepository(db *mongo.Database) *MongoRawRecordsRepository {
-	return &MongoRawRecordsRepository{db: db}
+func NewRawRecordsRepository(db *mongo.Database, collection string, bsonService BsonService) *MongodbRawRecordsRepository {
+	return &MongodbRawRecordsRepository{MongodbRepository{db, collection, bsonService}}
 }
 
 // Store is responsible for storing the raw records in the database.
-func (repository *MongoRawRecordsRepository) Store(records []Record, id TransactionID) (err error) {
+func (repository *MongodbRawRecordsRepository) Store(records []RawRecord, id TransactionID) (err error) {
 	idString, err := id.String()
 	if err != nil {
 		return errors.Wrapf(err, "cannot convert transaction id to string")
@@ -33,15 +26,20 @@ func (repository *MongoRawRecordsRepository) Store(records []Record, id Transact
 
 	var documents []interface{}
 	for _, record := range records {
-		valAsMap, err := json.ToInterfaceMap(record)
+		document, err := repository.bsonService.EncodeToBsonM(record)
 		if err != nil {
 			return errors.Wrapf(err, "cannot convert record to map")
 		}
 
-		valAsMap["transactionId"] = idString
-		valAsMap["createdAt"] = time.Now().UTC().String()
-		documents = append(documents, bson.M(valAsMap))
+		document = repository.SetTimestampFields(document)
+		document = repository.SetTransactionIDField(document, idString)
+
+		documents = append(documents, document)
 	}
-	_, err = repository.db.Collection(collection).InsertMany(context.Background(), documents)
-	return errors.Wrapf(err, "cannot insert documents into DB")
+	_, err = repository.db.Collection(repository.collection).InsertMany(context.Background(), documents)
+	if err != nil {
+		return errors.Wrapf(err, "cannot insert documents into db")
+	}
+
+	return nil
 }

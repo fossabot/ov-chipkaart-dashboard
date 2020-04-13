@@ -39,7 +39,7 @@ type CSVTransactionFetchOptions struct {
 }
 
 // FetchTransactionRecords returns an array of records from a CSV file.
-func (service TransactionFetcherCSVService) FetchTransactionRecords(config CSVTransactionFetchOptions) (results []Record, err error) {
+func (service TransactionFetcherCSVService) FetchTransactionRecords(config CSVTransactionFetchOptions) (results []RawRecord, err error) {
 	records, err := service.csvFileReader.ReadAll(config.fileID)
 	if err != nil {
 		return results, errors.Wrapf(err, "cannot read csv file")
@@ -73,7 +73,7 @@ func (service TransactionFetcherCSVService) FetchTransactionRecords(config CSVTr
 			return results, errors.Wrapf(err, "cannot parse date into string")
 		}
 
-		results = append(results, Record{
+		results = append(results, RawRecord{
 			CheckInInfo:         service.getCheckInInfo(record),
 			CheckInText:         service.getCheckInText(record),
 			Fare:                fare,

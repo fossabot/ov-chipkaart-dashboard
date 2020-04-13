@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/getsentry/sentry-go"
@@ -37,7 +37,36 @@ func main() {
 		log.Fatal(errors.Wrapf(err, "cannot connect to mongoDB"))
 	}
 
-	rawRecordsRepository := NewRawRecordsRepository(client.Database(os.Getenv("MONGODB_DB_NAME")))
+	//config := TransactionFetcherAPIServiceConfig{
+	//	ClientID:     os.Getenv("CLIENT_ID"),
+	//	ClientSecret: os.Getenv("CLIENT_SECRET"),
+	//	Locale:       localeEnglish,
+	//	Client:       &http.Client{},
+	//}
+	//apiService := NewAPIService(config)
+
+	mongodb := client.Database(os.Getenv("MONGODB_DB_NAME"))
+	bsonService := BsonService{}
+	nsStationsRepository := NewMongoNSStationsRepository(mongodb, collectionNSStations, bsonService)
+
+	log.Printf("Fetching Stations")
+	nsClient := NewNSAPIClient(&http.Client{}, os.Getenv("NS_API_KEY_PUBLIC_TRAVEL_INFORMATION"))
+	log.Printf("Stations fetch finished")
+
+	stations, err := nsClient.GetAllStations()
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	log.Printf("Storing stations in the database")
+	err = nsStationsRepository.Store(stations)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	log.Printf("Finished storing stations")
+
+	//rawRecordsRepository := NewRawRecordsRepository(client.Database(os.Getenv("MONGODB_DB_NAME")), collectionRawRecords, BsonService{})
 
 	//config := TransactionFetcherAPIServiceConfig{
 	//	ClientID:     os.Getenv("CLIENT_ID"),
@@ -61,30 +90,30 @@ func main() {
 	//	log.Panicf(errors.Wrapf(err, "%+v", err).Error())
 	//}
 
-	basePath, err := filepath.Abs("./data-lake/")
-	if err != nil {
-		log.Panicf("%+v", err.Error())
-	}
-
-	config := CSVTransactionFetchOptions{
-		fileID:     "test.csv",
-		cardNumber: os.Getenv("OV_CHIPKAAT_CARD_NUMBER"),
-		startDate:  time.Unix(0, 0),
-		endDate:    time.Now(),
-	}
-
-	log.Println("Fetching Transactions")
-	csvFetcherServce := NewTransactionFetcherCSVService(NewFileSystemCSVReader(basePath))
-	records, err := csvFetcherServce.FetchTransactionRecords(config)
-	if err != nil {
-		log.Panicf("%+v", err.Error())
-	}
-
-	log.Println(len(records))
-	log.Println("Inserting into database")
-	err = rawRecordsRepository.Store(records, NewTransactionID())
-	if err != nil {
-		log.Panicf(errors.Wrapf(err, "%+v", err).Error())
-	}
+	//basePath, err := filepath.Abs("./data-lake/")
+	//if err != nil {
+	//	log.Panicf("%+v", err.Error())
+	//}
+	//
+	//config := CSVTransactionFetchOptions{
+	//	fileID:     "test.csv",
+	//	cardNumber: os.Getenv("OV_CHIPKAAT_CARD_NUMBER"),
+	//	startDate:  time.Unix(0, 0),
+	//	endDate:    time.Now(),
+	//}
+	//
+	//log.Println("Fetching Transactions")
+	//csvFetcherServce := NewTransactionFetcherCSVService(NewFileSystemCSVReader(basePath))
+	//records, err := csvFetcherServce.FetchTransactionRecords(config)
+	//if err != nil {
+	//	log.Panicf("%+v", err.Error())
+	//}
+	//
+	//log.Println(len(records))
+	//log.Println("Inserting into database")
+	//err = rawRecordsRepository.Store(records, NewTransactionID())
+	//if err != nil {
+	//	log.Panicf(errors.Wrapf(err, "%+v", err).Error())
+	//}
 
 }

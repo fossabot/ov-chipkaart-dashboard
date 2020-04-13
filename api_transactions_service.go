@@ -38,11 +38,11 @@ type authorisationTokenResponse struct {
 type transactionsResponse struct {
 	ResponseCode int `json:"c"`
 	Response     struct {
-		TotalSize              int      `json:"totalSize"`
-		NextOffset             int      `json:"nextOffset"`
-		PreviousOffset         int      `json:"previousOffset"`
-		Records                []Record `json:"records"`
-		TransactionsRestricted bool     `json:"transactionsRestricted"`
+		TotalSize              int         `json:"totalSize"`
+		NextOffset             int         `json:"nextOffset"`
+		PreviousOffset         int         `json:"previousOffset"`
+		Records                []RawRecord `json:"records"`
+		TransactionsRestricted bool        `json:"transactionsRestricted"`
 		NextRequestContext     struct {
 			StartDate string `json:"startDate"`
 			EndDate   string `json:"endDate"`
@@ -50,26 +50,6 @@ type transactionsResponse struct {
 		} `json:"nextRequestContext"`
 	} `json:"o"`
 	Error interface{} `json:"e"`
-}
-
-// Record represents a transaction record
-type Record struct {
-	CheckInInfo            string   `json:"checkInInfo"`
-	CheckInText            string   `json:"checkInText"`
-	Fare                   *float64 `json:"fare"`
-	FareCalculation        string   `json:"fareCalculation"`
-	FareText               string   `json:"fareText"`
-	ModalType              string   `json:"modalType"`
-	ProductInfo            string   `json:"productInfo"`
-	ProductText            string   `json:"productText"`
-	Pto                    string   `json:"pto"`
-	TransactionDateTime    int64    `json:"transactionDateTime"`
-	TransactionInfo        string   `json:"transactionInfo"`
-	TransactionName        string   `json:"transactionName"`
-	EPurseMut              *float64 `json:"ePurseMut"`
-	EPurseMutInfo          string   `json:"ePurseMutInfo"`
-	TransactionExplanation string   `json:"transactionExplanation"`
-	TransactionPriority    string   `json:"transactionPriority"`
 }
 
 type transactionsPayload struct {
@@ -108,7 +88,7 @@ func NewAPIService(config TransactionFetcherAPIServiceConfig) *TransactionFetche
 }
 
 // FetchTransactions returns the transaction records based on the parameter provided.
-func (service TransactionFetcherAPIService) FetchTransactions(options TransactionFetchOptions) (records *[]Record, err error) {
+func (service TransactionFetcherAPIService) FetchTransactions(options TransactionFetchOptions) (records *[]RawRecord, err error) {
 	authenticationToken, err := service.getAuthenticationToken(options.Username, options.Password)
 	if err != nil {
 		return records, errors.Wrap(err, "could not fetch authentication token")
@@ -127,7 +107,7 @@ func (service TransactionFetcherAPIService) FetchTransactions(options Transactio
 	return records, nil
 }
 
-func (service TransactionFetcherAPIService) getTransactions(authorisationToken authorisationTokenResponse, options TransactionFetchOptions) (*[]Record, error) {
+func (service TransactionFetcherAPIService) getTransactions(authorisationToken authorisationTokenResponse, options TransactionFetchOptions) (*[]RawRecord, error) {
 	payload := transactionsPayload{
 		AuthorisationToken: authorisationToken.Value,
 		MediumID:           options.CardNumber,
