@@ -18,12 +18,7 @@ func NewRawRecordsRepository(db *mongo.Database, collection string, bsonService 
 }
 
 // Store is responsible for storing the raw records in the database.
-func (repository *MongodbRawRecordsRepository) Store(records []RawRecord, id TransactionID) (err error) {
-	idString, err := id.String()
-	if err != nil {
-		return errors.Wrapf(err, "cannot convert transaction id to string")
-	}
-
+func (repository *MongodbRawRecordsRepository) Store(records []RawRecord) (err error) {
 	var documents []interface{}
 	for _, record := range records {
 		document, err := repository.bsonService.EncodeToBsonM(record)
@@ -32,7 +27,6 @@ func (repository *MongodbRawRecordsRepository) Store(records []RawRecord, id Tra
 		}
 
 		document = repository.SetTimestampFields(document)
-		document = repository.SetTransactionIDField(document, idString)
 
 		documents = append(documents, document)
 	}
@@ -42,4 +36,35 @@ func (repository *MongodbRawRecordsRepository) Store(records []RawRecord, id Tra
 	}
 
 	return nil
+}
+
+// GetByTransactionID returns the price of an NS journey repository based on the journey hash
+func (repository *MongodbRawRecordsRepository) GetByTransactionID(options GetRawRecordsOptions) (rawRecords []RawRecord, err error) {
+	filter, err := repository.bsonService.EncodeToBsonM(options)
+	if err != nil {
+		return rawRecords, err
+	}
+
+	ctx, _ := context.WithTimeout(context.Background(), dbOperationTimeout)
+	cursor, err := repository.db.Collection(repository.collection).Find(ctx, filter)
+	if err != nil {
+		return rawRecords, err
+	}
+	defer func() { _ = cursor.Close(context.Background()) }()
+
+	for cursor.Next(ctx) {
+		var record RawRecord
+		err := cursor.Decode(&RawRecord{})
+		if err != nil {
+			return rawRecords, errors.Wrap(err, "cannot decode to bson.M to enriched record")
+		}
+		rawRecords = append(rawRecords, record)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		return rawRecords, errors.Wrap(err, "DB error")
+	}
+
+	return rawRecords, nil
 }

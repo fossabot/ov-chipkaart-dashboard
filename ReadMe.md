@@ -8,12 +8,14 @@
 - [X] Create the ability to convert csv download using the same API
 - [X] Create ability to store destination prices for NS in the cache (DB) (map with 2 way keys)\
 - [X] Create stations code cache service
-- [ ] Create NS transactions filter
-- [ ] Create enrichment step for NS transactions
+- [X] Create NS transactions filter
+- [X] Create enrichment step for NS transactions
+- [ ] Create ability to store Enriched NS transaction
 - [ ] Create ability to process NS transactions without discount
 - [ ] Create ability to process NS transactions (Dal Voordeel)
 - [ ] Create ability to process NS transactions with 20% discount with weekends (Altijd voordeel)
 - [ ] Create ability to filter all off peak NS transactions (Dal Vrij)
+- [ ] Implement LFU cache with O(1) complexity
 
 
 ### V2
@@ -25,4 +27,3 @@
 ### Blogging
 
 - [ ] LFU Cache implementation and use
-- [ ] 

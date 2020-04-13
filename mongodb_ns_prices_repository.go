@@ -22,7 +22,7 @@ func NewMongoNSPricesRepository(db *mongo.Database, collection string, bsonServi
 func (repository *MongoNSPricesRepository) Store(price NSJourneyPrice) (err error) {
 	document, err := repository.bsonService.EncodeToBsonM(price)
 	if err != nil {
-		return errors.Wrap(err, "cannot convert struct to map")
+		return errors.Wrap(err, "cannot convert struct to bson.M")
 	}
 
 	document = repository.SetTimestampFields(document)

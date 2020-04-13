@@ -143,6 +143,14 @@ func (service TransactionFetcherAPIService) getTransactions(authorisationToken a
 		records = append(records, transactions.Response.Records...)
 	}
 
+	// Enriching records
+	source := rawRecordSourceCSV
+	for _, record := range records {
+		transactionID := NewTransactionID()
+		record.Source = &source
+		record.TransactionID = &transactionID
+	}
+
 	return &records, nil
 }
 

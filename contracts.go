@@ -25,22 +25,40 @@ type TransactionFetchOptions struct {
 // RawRecord represents a transaction record
 type RawRecord struct {
 	DBTimestamp
-	CheckInInfo            string   `json:"checkInInfo" bson:"check_in_info"`
-	CheckInText            string   `json:"checkInText" bson:"check_in_text"`
-	Fare                   *float64 `json:"fare" bson:"fare"`
-	FareCalculation        string   `json:"fareCalculation" bson:"fare_calculation"`
-	FareText               string   `json:"fareText" bson:"fare_text"`
-	ModalType              string   `json:"modalType" bson:"modal_type"`
-	ProductInfo            string   `json:"productInfo" bson:"product_info"`
-	ProductText            string   `json:"productText" bson:"product_text"`
-	Pto                    string   `json:"pto" bson:"product_text"`
-	TransactionDateTime    int64    `json:"transactionDateTime" bson:"transaction_timestamp"`
-	TransactionInfo        string   `json:"transactionInfo" bson:"transaction_info"`
-	TransactionName        string   `json:"transactionName" bson:"transaction_name"`
-	EPurseMut              *float64 `json:"ePurseMut" bson:"e_purse_mut"`
-	EPurseMutInfo          string   `json:"ePurseMutInfo" bson:"e_purse_mut_info"`
-	TransactionExplanation string   `json:"transactionExplanation" bson:"transaction_explanation"`
-	TransactionPriority    string   `json:"transactionPriority" bson:"transaction_priority"`
+	ID                     *TransactionID   `bson:"id"`
+	TransactionID          *TransactionID   `bson:"transaction_id"`
+	CheckInInfo            string           `json:"checkInInfo" bson:"check_in_info"`
+	CheckInText            string           `json:"checkInText" bson:"check_in_text"`
+	Fare                   *float64         `json:"fare" bson:"fare"`
+	FareCalculation        string           `json:"fareCalculation" bson:"fare_calculation"`
+	FareText               string           `json:"fareText" bson:"fare_text"`
+	ModalType              string           `json:"modalType" bson:"modal_type"`
+	ProductInfo            string           `json:"productInfo" bson:"product_info"`
+	ProductText            string           `json:"productText" bson:"product_text"`
+	Pto                    string           `json:"pto" bson:"product_text"`
+	TransactionDateTime    int64            `json:"transactionDateTime" bson:"transaction_timestamp"`
+	TransactionInfo        string           `json:"transactionInfo" bson:"transaction_info"`
+	TransactionName        TransactionName  `json:"transactionName" bson:"transaction_name"`
+	EPurseMut              *float64         `json:"ePurseMut" bson:"e_purse_mut"`
+	EPurseMutInfo          string           `json:"ePurseMutInfo" bson:"e_purse_mut_info"`
+	TransactionExplanation string           `json:"transactionExplanation" bson:"transaction_explanation"`
+	TransactionPriority    string           `json:"transactionPriority" bson:"transaction_priority"`
+	Source                 *RawRecordSource `bson:"source"`
+}
+
+// IsCheckIn determines if a record is a check in record
+func (record RawRecord) IsCheckIn() bool {
+	return record.TransactionName.IsTheSameAs(transactionNameCheckIn)
+}
+
+// IsNSSupplement determines if a records is a surcharge
+func (record RawRecord) IsNSSupplement() bool {
+	return record.TransactionName.IsTheSameAs(transactionNameIntercityDirectSurcharge)
+}
+
+// IsCheckOut determines if a record is checkout transaction.
+func (record RawRecord) IsCheckOut() bool {
+	return record.TransactionName.IsTheSameAs(transactionNameCheckOut)
 }
 
 // HTTPClient is the class used to perform http requests
@@ -50,7 +68,7 @@ type HTTPClient interface {
 
 // RawRecordsRepository is used to persist raw transaction records
 type RawRecordsRepository interface {
-	Store(records []RawRecord, id TransactionID) (err error)
+	Store(records []RawRecord) (err error)
 }
 
 // NSJourneyPrice represents the price for an NS journey
@@ -66,6 +84,11 @@ type NSJourneyPrice struct {
 	FirstClassRoutePrice          int    `bson:"fist_class_route_price"`
 	SecondClassRoutePrice         int    `bson:"second_class_route_price"`
 	Hash                          string `bson:"hash"`
+}
+
+// EstimateDurationInMilliSeconds gives an estimate of the duration of a journey based on the price
+func (price NSJourneyPrice) EstimateDurationInMilliSeconds() int {
+	return (price.SecondClassSingleFarePrice - basicFare) * costMultiplier * 60 * 1000
 }
 
 // NSPricesRepository is responsible for saving and loading the NSJourneyPrice for an journey
@@ -126,10 +149,20 @@ func (station NSStation) ToLower() NSStation {
 
 // NSJourney are options for fetching the price of a journey
 type NSJourney struct {
-	Year            string `bson:"Year"`
+	Year            string `bson:"year"`
 	FromStationCode string `bson:"from_station_code"`
 	ToStationCode   string `bson:"to_station_code"`
 	date            time.Time
+}
+
+// NewNSJourney creates a new NSJourney instance
+func NewNSJourney(timestamp time.Time, fromStationCode, toStationCode string) NSJourney {
+	return NSJourney{
+		Year:            timestamp.Format(yearFormat),
+		FromStationCode: fromStationCode,
+		ToStationCode:   toStationCode,
+		date:            timestamp,
+	}
 }
 
 // ToMap converts  the JS journey struct to a `map[string]string` map
@@ -145,4 +178,45 @@ func (journey NSJourney) ToMap() map[string]string {
 func (journey NSJourney) NSPriceHash() string {
 	hashBytes := md5.Sum([]byte(journey.FromStationCode + hashSeparator + journey.ToStationCode + hashSeparator + journey.Year))
 	return string(hashBytes[:])
+}
+
+//////////////////////////
+// Enrichment Service
+//////////////////////////
+
+// EnrichedRecord represents an enriched record.
+type EnrichedRecord struct {
+	RawRecordID      TransactionID
+	TransactionID    TransactionID
+	ID               TransactionID
+	StartTime        int64
+	StartTimeIsExact bool
+	CompanyName      CompanyName
+	TransactionType  TransactionType
+}
+
+// RawRecordsEnrichmentService is the interface for filtering raw records
+type RawRecordsEnrichmentService interface {
+	Enrich(records []RawRecord) RawRecordsEnrichmentResults
+}
+
+// RawRecordsEnrichmentResults is the results of the raw records filter
+type RawRecordsEnrichmentResults struct {
+	ValidRecords []EnrichedRecord
+	Error        RawRecordsEnrichmentError
+}
+
+// HasError determines if there are error results in the filter results
+func (results RawRecordsEnrichmentResults) HasError() bool {
+	return len(results.Error.ErrorRecords) > 0
+}
+
+// GetRawRecordsOptions are settings that are passed to the RawRecordsRepository
+type GetRawRecordsOptions struct {
+	SortBy string
+}
+
+// EnrichedRecordsRepository fetches enriched records.
+type EnrichedRecordsRepository interface {
+	Store(records []EnrichedRecord) (err error)
 }

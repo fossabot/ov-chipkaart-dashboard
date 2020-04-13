@@ -73,6 +73,8 @@ func (service TransactionFetcherCSVService) FetchTransactionRecords(config CSVTr
 			return results, errors.Wrapf(err, "cannot parse date into string")
 		}
 
+		source := rawRecordSourceCSV
+		transactionID := NewTransactionID()
 		results = append(results, RawRecord{
 			CheckInInfo:         service.getCheckInInfo(record),
 			CheckInText:         service.getCheckInText(record),
@@ -81,6 +83,8 @@ func (service TransactionFetcherCSVService) FetchTransactionRecords(config CSVTr
 			TransactionDateTime: timestamp,
 			TransactionInfo:     service.getTransactionInfo(record),
 			TransactionName:     service.getTransactionName(record),
+			Source:              &source,
+			ID:                  &transactionID,
 		})
 	}
 
@@ -100,8 +104,8 @@ func (service TransactionFetcherCSVService) getCardNumber(record []string) strin
 	return strings.Replace(record[11], " ", "", -1)
 }
 
-func (service TransactionFetcherCSVService) getTransactionName(record []string) string {
-	return record[6]
+func (service TransactionFetcherCSVService) getTransactionName(record []string) TransactionName {
+	return TransactionName(record[6])
 }
 
 func (service TransactionFetcherCSVService) getTransactionInfo(record []string) string {
@@ -112,6 +116,7 @@ func (service TransactionFetcherCSVService) getProductInfo(record []string) stri
 	return record[8]
 }
 
+// This returns the datetime in milliseconds to make it compatible with the API dateTime
 func (service TransactionFetcherCSVService) getTransactionDateTime(record []string) (timestamp int64, err error) {
 	dateString := record[0]
 	if service.isCheckInTransaction(record) {
@@ -126,7 +131,7 @@ func (service TransactionFetcherCSVService) getTransactionDateTime(record []stri
 		return timestamp, errors.Wrapf(err, "cannot parse date %s using format  %s", dateString, timestampFormat)
 	}
 
-	return date.Unix(), err
+	return date.UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond)), err
 }
 
 func (service TransactionFetcherCSVService) getFare(record []string) (fare *float64, err error) {
