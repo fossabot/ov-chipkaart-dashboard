@@ -7,12 +7,12 @@ import (
 	"os"
 	"time"
 
+	lfucache "github.com/NdoleStudio/lfu-cache"
 	"github.com/getsentry/sentry-go"
+	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
-	"github.com/joho/godotenv"
 )
 
 const localeEnglish = "en-EN"
@@ -115,5 +115,5 @@ func main() {
 	//if err != nil {
 	//	log.Panicf(errors.Wrapf(err, "%+v", err).Error())
 	//}
-
+	_, err = lfucache.New(100)
 }

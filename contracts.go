@@ -113,7 +113,7 @@ type ErrorHandler interface {
 // LFUCache implements a least frequently used cache
 type LFUCache interface {
 	Get(key interface{}) (value interface{}, err error)
-	Put(key interface{}, value interface{})
+	Set(key interface{}, value interface{}) (err error)
 }
 
 // NSStation contains info for an NSStation

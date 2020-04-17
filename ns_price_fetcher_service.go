@@ -9,7 +9,6 @@ type NSPriceFetcherService struct {
 	apiClient        *NSAPIClient
 	pricesRepository NSPricesRepository
 	cache            LFUCache
-	timeService      TimeService
 	errorHandler     ErrorHandler
 }
 
@@ -17,7 +16,6 @@ type NSPriceFetcherService struct {
 func NewNSPriceFetcher(
 	apiClient *NSAPIClient,
 	pricesRepository NSPricesRepository,
-	timeService TimeService,
 	errorHandler ErrorHandler,
 	cache LFUCache,
 ) *NSPriceFetcherService {
@@ -25,7 +23,6 @@ func NewNSPriceFetcher(
 		apiClient,
 		pricesRepository,
 		cache,
-		timeService,
 		errorHandler,
 	}
 }
@@ -42,7 +39,7 @@ func (priceFetcher *NSPriceFetcherService) FetchPrice(nsJourney NSJourney) (pric
 	price, err = priceFetcher.pricesRepository.GetByHash(nsJourney.NSPriceHash())
 	if err == nil {
 		// price is not in cache so store in cache
-		priceFetcher.cache.Put(nsJourney.NSPriceHash(), price)
+		priceFetcher.cache.Set(nsJourney.NSPriceHash(), price)
 		return price, err
 	}
 

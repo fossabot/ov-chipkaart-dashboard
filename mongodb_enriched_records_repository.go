@@ -39,8 +39,13 @@ func (repository *MongoNSEnrichedRecordsRepository) Store(price NSJourneyPrice) 
 
 // GetByTransactionID returns the price of an NS journey repository based on the journey hash
 func (repository *MongoNSEnrichedRecordsRepository) GetByTransactionID(id TransactionID) (enrichedRecords []EnrichedRecord, err error) {
+	transactionID, err := id.String()
+	if err != nil {
+		return enrichedRecords, errors.Wrap(err, "cannot convert transaction id to string")
+	}
+
 	ctx, _ := context.WithTimeout(context.Background(), dbOperationTimeout)
-	cursor, err := repository.db.Collection(repository.collection).Find(ctx, bson.M{"transaction_id": id.String()})
+	cursor, err := repository.db.Collection(repository.collection).Find(ctx, bson.M{"transaction_id": transactionID})
 	if err != nil {
 		return enrichedRecords, err
 	}

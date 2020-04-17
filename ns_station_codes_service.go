@@ -52,7 +52,11 @@ func (service *NSStationsCodeService) GetCodeForStationName(stationName string) 
 	}
 
 	// the stationName code exists so update the cache
-	service.cache.Put(nsStation.Name, nsStation)
+	err = service.cache.Set(nsStation.Name, nsStation)
+	if err != nil {
+		// log this error for debugging
+		service.errorHandler.HandleSoftError(err)
+	}
 
 	return nsStation, nil
 }
