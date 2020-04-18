@@ -8,8 +8,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/gofrs/uuid"
-
 	lfucache "github.com/NdoleStudio/lfu-cache"
 	"github.com/getsentry/sentry-go"
 	"github.com/joho/godotenv"
@@ -41,17 +39,68 @@ func main() {
 	}
 
 	mongodb := client.Database(os.Getenv("MONGODB_DB_NAME"))
+	//loadNsStations(mongodb)
+	//storeNSTransactions(mongodb)
+
+	bsonService := NewBsonService()
+	errorHandler := NewSentryErrorHandler()
+	rawRecordsRepository := NewRawRecordsRepository(mongodb, collectionRawRecords, bsonService)
+	enrichedRecordsRepository := NewMongoNSEnrichedRecordsRepository(mongodb, collectionNSEnrichedRecords, bsonService)
+	cache, err := lfucache.New(100)
+	nsClient := NewNSAPIClient(&http.Client{}, os.Getenv("NS_API_KEY_PUBLIC_TRAVEL_INFORMATION"))
+	pricesRepository := NewMongoNSPricesRepository(mongodb, collectionNSPrices, bsonService)
+	stationsRepository := NewMongoNSStationsRepository(mongodb, collectionNSStations, bsonService)
+	priceFetcher := NewNSPriceFetcher(nsClient, pricesRepository, errorHandler, cache)
+	stationCodeService := NewNSStationsCodeService(stationsRepository, errorHandler, cache)
+	enrichmentService := NewNSRawRecordsEnrichmentService(stationCodeService, priceFetcher)
+
+	log.Println("Fetchigng first transaction")
+	id, err := rawRecordsRepository.First()
+	if err != nil {
+		errorHandler.HandleHardError(err)
+	}
+	log.Println("Finished fetching first transaction")
+
+	globalTransactionID := *id.TransactionID
+	getOptions := GetRawRecordsOptions{
+		TransactionID: globalTransactionID,
+		SortBy:        "transaction_timestamp",
+		SortDirection: "DESC",
+	}
+
+	log.Println("fetching raw records from DB")
+	rawRecords, err := rawRecordsRepository.GetByTransactionID(getOptions)
+	if err != nil {
+		errorHandler.HandleHardError(err)
+	}
+
+	log.Printf("%d raw records fetched\n", len(rawRecords))
+
+	log.Println("Fetching enriched records")
+	enrichmentResult := enrichmentService.Enrich(rawRecords)
+	log.Println("Finished enriching records")
+
+	log.Printf("%d enriched records and %d failed records\n", len(enrichmentResult.ValidRecords), len(enrichmentResult.Error.ErrorRecords))
+
+	log.Println("Starting storing of enriched records")
+	err = enrichedRecordsRepository.Store(enrichmentResult.ValidRecords)
+	if err != nil {
+		errorHandler.HandleHardError(err)
+	}
+	log.Println("Finished storing of enriched records")
+}
+
+func loadNsStations(mongodb *mongo.Database) {
 	bsonService := BsonService{}
 	nsStationsRepository := NewMongoNSStationsRepository(mongodb, collectionNSStations, bsonService)
 	//
 	log.Printf("Fetching Stations")
 	nsClient := NewNSAPIClient(&http.Client{}, os.Getenv("NS_API_KEY_PUBLIC_TRAVEL_INFORMATION"))
-	log.Printf("Stations fetch finished")
-
 	stations, err := nsClient.GetAllStations()
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
+	log.Printf("Stations fetch finished")
 
 	log.Printf("Storing stations in the database")
 	err = nsStationsRepository.Store(stations)
@@ -59,16 +108,11 @@ func main() {
 		log.Fatalf(err.Error())
 	}
 	log.Printf("Finished storing stations")
-	//
-	rawRecordsRepository := NewRawRecordsRepository(mongodb, collectionRawRecords, bsonService)
-	pricesRepository := NewMongoNSPricesRepository(mongodb, collectionNSPrices, bsonService)
-	enrichedRecordsRepository := NewMongoNSEnrichedRecordsRepository(mongodb, collectionNSEnrichedRecords, bsonService)
+}
 
-	cache, err := lfucache.New(100)
-	errorHandler := NewSentryErrorHandler()
-	priceFetcher := NewNSPriceFetcher(nsClient, pricesRepository, errorHandler, cache)
-	stationCodeService := NewNSStationsCodeService(nsStationsRepository, errorHandler, cache)
-	enrichmentService := NewNSRawRecordsEnrichmentService(stationCodeService, priceFetcher)
+func storeNSTransactions(mongodb *mongo.Database) {
+	bsonService := NewBsonService()
+	rawRecordsRepository := NewRawRecordsRepository(mongodb, collectionRawRecords, bsonService)
 
 	//
 	config := TransactionFetcherAPIServiceConfig{
@@ -114,37 +158,4 @@ func main() {
 		log.Panicf(errors.Wrapf(err, "%+v", err).Error())
 	}
 
-	id, err := uuid.FromString("e7474312-00b4-4b49-ac1d-429d74111b85")
-	if err != nil {
-		errorHandler.HandleHardError(err)
-	}
-
-	globalTransactionID = TransactionID(id)
-
-	getOptions := GetRawRecordsOptions{
-		TransactionID: globalTransactionID,
-		SortBy:        "transaction_timestamp",
-		SortDirection: "DESC",
-	}
-
-	log.Println("fetching raw records from DB")
-	rawRecords, err := rawRecordsRepository.GetByTransactionID(getOptions)
-	if err != nil {
-		errorHandler.HandleHardError(err)
-	}
-
-	log.Printf("%d raw records fetched\n", len(rawRecords))
-
-	log.Println("Fetching enriched records")
-	enrichmentResult := enrichmentService.Enrich(rawRecords)
-	log.Println("Finished enriching records")
-
-	log.Printf("%d enriched records and %d failed records\n", len(enrichmentResult.ValidRecords), len(enrichmentResult.Error.ErrorRecords))
-
-	log.Println("Starting storing of enriched records")
-	err = enrichedRecordsRepository.Store(enrichmentResult.ValidRecords)
-	if err != nil {
-		errorHandler.HandleHardError(err)
-	}
-	log.Println("Finished storing of enriched records")
 }

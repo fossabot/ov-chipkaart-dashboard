@@ -51,6 +51,12 @@ func (service NSRawRecordsEnrichmentService) Enrich(records []RawRecord) (result
 		transactionID := record.TransactionID
 		enrichedRecordID := NewTransactionID()
 
+		idString, err := rawRecordID.String()
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("Processing ID: ", idString)
+
 		// Check if record is check-in record Record
 		if record.IsCheckIn() {
 			prev = record
@@ -81,7 +87,9 @@ func (service NSRawRecordsEnrichmentService) Enrich(records []RawRecord) (result
 		// Record is a checkout record meaning we can calculate the price
 		if record.IsCheckOut() {
 			if record.IsNS() {
+				log.Println("if start")
 				enrichedRecord, errorRecord := service.getEnrichedNsRecord(prev, record, rawRecordID, transactionID, &enrichedRecordID)
+				log.Println("Finished enrich")
 				if errorRecord.Error != nil {
 					spew.Dump(errorRecord.Error)
 					enrichmentErrors.ErrorRecords = append(enrichmentErrors.ErrorRecords, errorRecord)
@@ -92,7 +100,9 @@ func (service NSRawRecordsEnrichmentService) Enrich(records []RawRecord) (result
 				// If we're here we know that the record is a check-out record but we don't know the company to which it belongs.
 				// We'll check if the journey can be an NS journey and if that's the case, we'll enrich it.
 				// If the journey is not a valid NSJourney we don't bother about it.
+				log.Println("else start")
 				enrichedRecord, errorRecord := service.getEnrichedNsRecord(prev, record, rawRecordID, transactionID, &enrichedRecordID)
+				log.Println("else returne")
 				if errorRecord.Error == nil {
 					enrichedRecords = append(enrichedRecords, enrichedRecord)
 				}
@@ -123,16 +133,17 @@ func (service NSRawRecordsEnrichmentService) getEnrichedNsRecord(prev, record Ra
 
 	spew.Dump(record)
 
-	log.Printf("Fetching station name for %s ", record.CheckInInfo)
+	log.Printf("Fetching from station name for %s ", record.CheckInInfo)
 	fromStation, err := service.stationsCodeService.GetCodeForStationName(record.CheckInInfo)
 	if err != nil {
+		log.Println("error returned")
 		return enrichedRecord, ErrorRecord{
 			Record: record,
 			Error:  errors.Wrapf(err, "cannot get code for station: %s", record.CheckInInfo),
 		}
 	}
 
-	log.Printf("Fetching station name for %s ", record.TransactionInfo)
+	log.Printf("Fetching to station name for %s ", record.TransactionInfo)
 	toStation, err := service.stationsCodeService.GetCodeForStationName(record.TransactionInfo)
 	if err != nil {
 		return enrichedRecord, ErrorRecord{

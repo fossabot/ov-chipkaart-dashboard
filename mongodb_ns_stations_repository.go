@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -42,7 +43,9 @@ func (repository *MongoNSStationsRepository) Store(stations []NSStation) (err er
 func (repository *MongoNSStationsRepository) GetByName(name string) (station NSStation, err error) {
 	ctx, _ := context.WithTimeout(context.Background(), dbOperationTimeout)
 
+	log.Println("Db fetching for name = ", name)
 	err = repository.db.Collection(repository.collection).FindOne(ctx, bson.M{"name": name}).Decode(&station)
+	log.Println("finished fetching")
 
 	if err == mongo.ErrNoDocuments {
 		return station, ErrNotFound
@@ -58,7 +61,9 @@ func (repository *MongoNSStationsRepository) GetByName(name string) (station NSS
 func (repository *MongoNSStationsRepository) GetByCode(code string) (station NSStation, err error) {
 	ctx, _ := context.WithTimeout(context.Background(), dbOperationTimeout)
 
+	log.Println("Db fetching for code = ", code)
 	err = repository.db.Collection(repository.collection).FindOne(ctx, bson.M{"code": code}).Decode(&station)
+	log.Println("finished fetching")
 
 	if err == mongo.ErrNoDocuments {
 		return station, ErrNotFound

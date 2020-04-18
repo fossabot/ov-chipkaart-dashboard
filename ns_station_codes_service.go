@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -36,6 +37,8 @@ func (service *NSStationsCodeService) GetCodeForStationName(stationName string) 
 		return val.(NSStation), error
 	}
 
+	log.Println("station name cache miss")
+
 	// Search the database for the code
 	nsStation, err = service.repository.GetByName(stationName)
 	if err != nil {
@@ -45,18 +48,24 @@ func (service *NSStationsCodeService) GetCodeForStationName(stationName string) 
 			return nsStation, ErrorInvalidStationName
 		}
 
+		log.Println("Finished fetching by code")
+
 		// log this error for debugging
 		service.errorHandler.HandleSoftError(
 			errors.New(fmt.Sprintf("GetCodeForStationName() called with short code '%s' instead of stationName name", stationName)),
 		)
 	}
 
+	log.Println("finished fetching name")
 	// the stationName code exists so update the cache
 	err = service.cache.Set(nsStation.Name, nsStation)
+	log.Println("finished setting cache", err)
 	if err != nil {
 		// log this error for debugging
 		service.errorHandler.HandleSoftError(err)
 	}
+
+	log.Println("returning")
 
 	return nsStation, nil
 }
