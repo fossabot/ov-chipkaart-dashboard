@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
@@ -44,7 +45,7 @@ func (service NSRawRecordsEnrichmentService) Enrich(records []RawRecord) (result
 	//spew.Dump(counter)
 	var prev RawRecord
 
-	rateLimiter := ratelimit.New(3)
+	rateLimiter := ratelimit.New(100)
 	for _, record := range records {
 		rateLimiter.Take()
 		rawRecordID := record.ID
@@ -124,10 +125,16 @@ func (service NSRawRecordsEnrichmentService) Enrich(records []RawRecord) (result
 func (service NSRawRecordsEnrichmentService) getEnrichedNsRecord(prev, record RawRecord, rawRecordID, transactionID, newTransactionID *TransactionID) (enrichedRecord EnrichedRecord, errorRecord ErrorRecord) {
 	var startTime int64
 	var startTimeIsExact = false
-	if (prev != RawRecord{} && prev.IsCheckIn() && record.IsNS() && prev.TransactionInfo == record.CheckInInfo) {
+	if prev.IsCheckIn() && record.IsNS() && prev.TransactionInfo == record.CheckInInfo {
 		startTime = prev.TransactionDateTime.ToInt64()
 		startTimeIsExact = true
+		log.Fatalf("how are you")
 	} else {
+		log.Println("here")
+		log.Println(prev.IsCheckIn())
+		log.Println(prev.IsCheckIn() && record.IsNS())
+		log.Println(prev.TransactionInfo)
+		log.Println(record.CheckInInfo)
 		startTimeIsExact = false
 	}
 
@@ -168,7 +175,7 @@ func (service NSRawRecordsEnrichmentService) getEnrichedNsRecord(prev, record Ra
 	return EnrichedRecord{
 		FromStationCode:  journey.FromStationCode,
 		ToStationCode:    journey.ToStationCode,
-		Duration:         record.TransactionDateTime.ToInt64() - startTime,
+		Duration:         time.Millisecond * time.Duration(record.TransactionDateTime.ToInt64()-startTime),
 		RawRecordID:      rawRecordID,
 		TransactionID:    transactionID,
 		ID:               newTransactionID,

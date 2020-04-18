@@ -220,7 +220,7 @@ type EnrichedRecord struct {
 	ToStationCode    string             `bson:"to_station_code"`
 	CompanyName      CompanyName        `bson:"company_name"`
 	TransactionType  TransactionType    `bson:"transaction_type"`
-	Duration         int64              `bson:"duration"`
+	Duration         time.Duration      `bson:"duration"`
 }
 
 // RawRecordsEnrichmentService is the interface for filtering raw records

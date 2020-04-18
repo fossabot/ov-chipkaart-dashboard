@@ -11,6 +11,7 @@
 - [X] Create NS transactions filter
 - [X] Create enrichment step for NS transactions
 - [X] Create ability to store Enriched NS transactions
+- [ ] Use dependency injection for components
 - [ ] Create ability to process NS transactions without discount
 - [ ] Create ability to process NS transactions (Dal Voordeel)
 - [ ] Create ability to process NS transactions with 20% discount with weekends (Altijd voordeel)

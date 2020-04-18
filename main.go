@@ -65,7 +65,7 @@ func main() {
 	getOptions := GetRawRecordsOptions{
 		TransactionID: globalTransactionID,
 		SortBy:        "transaction_timestamp",
-		SortDirection: "DESC",
+		SortDirection: "ASC",
 	}
 
 	log.Println("fetching raw records from DB")
