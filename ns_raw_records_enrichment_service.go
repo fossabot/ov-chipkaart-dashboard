@@ -126,7 +126,7 @@ func (service NSRawRecordsEnrichmentService) getEnrichedNsRecord(prev, record Ra
 	var startTimeIsExact = false
 	if (prev != RawRecord{} && prev.IsCheckIn() && record.IsNS() && prev.TransactionInfo == record.CheckInInfo) {
 		startTime = prev.TransactionDateTime.ToInt64()
-		startTimeIsExact = false
+		startTimeIsExact = true
 	} else {
 		startTimeIsExact = false
 	}
