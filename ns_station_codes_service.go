@@ -20,8 +20,8 @@ type NSStationsCodeService struct {
 }
 
 // NewNSStationsCodeService is a service for fetching the station code based on a station name
-func NewNSStationsCodeService(repository NSStationsRepository, errorHandler ErrorHandler, cache LFUCache) *NSStationsCodeService {
-	return &NSStationsCodeService{cache, repository, errorHandler}
+func NewNSStationsCodeService(repository NSStationsRepository, errorHandler ErrorHandler, cache LFUCache) NSStationsCodeService {
+	return NSStationsCodeService{cache, repository, errorHandler}
 }
 
 // GetCodeForStationName gets the station code for a corresponding station name.

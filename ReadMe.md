@@ -10,7 +10,7 @@
 - [X] Create stations code cache service
 - [X] Create NS transactions filter
 - [X] Create enrichment step for NS transactions
-- [ ] Create ability to store Enriched NS transaction
+- [X] Create ability to store Enriched NS transactions
 - [ ] Create ability to process NS transactions without discount
 - [ ] Create ability to process NS transactions (Dal Voordeel)
 - [ ] Create ability to process NS transactions with 20% discount with weekends (Altijd voordeel)

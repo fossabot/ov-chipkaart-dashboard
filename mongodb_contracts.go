@@ -18,9 +18,10 @@ var (
 
 // collection names
 const (
-	collectionRawRecords = "raw_records"
-	collectionNSStations = "ns_stations"
-	collectionNSPrices   = "ns_prices_ns"
+	collectionRawRecords        = "raw_records"
+	collectionNSStations        = "ns_stations"
+	collectionNSPrices          = "ns_journey_prices"
+	collectionNSEnrichedRecords = "ns_enriched_records"
 )
 
 // db keys names
@@ -49,11 +50,5 @@ func (repo MongodbRepository) SetTimestampFields(document bson.M) bson.M {
 // SetUpdatedAtField set the updated field for a bson.M document
 func (repo MongodbRepository) SetUpdatedAtField(document bson.M) bson.M {
 	document[keyUpdatedAt] = time.Now().UTC().String()
-	return document
-}
-
-// SetTransactionIDField sets the transaction if field for a bson.M document
-func (repo MongodbRepository) SetTransactionIDField(document bson.M, id string) bson.M {
-	document[keyTransactionID] = id
 	return document
 }

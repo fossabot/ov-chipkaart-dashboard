@@ -117,7 +117,7 @@ func (service TransactionFetcherCSVService) getProductInfo(record []string) stri
 }
 
 // This returns the datetime in milliseconds to make it compatible with the API dateTime
-func (service TransactionFetcherCSVService) getTransactionDateTime(record []string) (timestamp int64, err error) {
+func (service TransactionFetcherCSVService) getTransactionDateTime(record []string) (timestamp TimeInMilliSeconds, err error) {
 	dateString := record[0]
 	if service.isCheckInTransaction(record) {
 		dateString += " " + record[1]
@@ -131,7 +131,7 @@ func (service TransactionFetcherCSVService) getTransactionDateTime(record []stri
 		return timestamp, errors.Wrapf(err, "cannot parse date %s using format  %s", dateString, timestampFormat)
 	}
 
-	return date.UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond)), err
+	return TimeInMilliSeconds(date.UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))), err
 }
 
 func (service TransactionFetcherCSVService) getFare(record []string) (fare *float64, err error) {

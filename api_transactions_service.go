@@ -88,7 +88,7 @@ func NewAPIService(config TransactionFetcherAPIServiceConfig) *TransactionFetche
 }
 
 // FetchTransactions returns the transaction records based on the parameter provided.
-func (service TransactionFetcherAPIService) FetchTransactions(options TransactionFetchOptions) (records *[]RawRecord, err error) {
+func (service TransactionFetcherAPIService) FetchTransactions(options TransactionFetchOptions) (records []RawRecord, err error) {
 	authenticationToken, err := service.getAuthenticationToken(options.Username, options.Password)
 	if err != nil {
 		return records, errors.Wrap(err, "could not fetch authentication token")
@@ -107,7 +107,7 @@ func (service TransactionFetcherAPIService) FetchTransactions(options Transactio
 	return records, nil
 }
 
-func (service TransactionFetcherAPIService) getTransactions(authorisationToken authorisationTokenResponse, options TransactionFetchOptions) (*[]RawRecord, error) {
+func (service TransactionFetcherAPIService) getTransactions(authorisationToken authorisationTokenResponse, options TransactionFetchOptions) ([]RawRecord, error) {
 	payload := transactionsPayload{
 		AuthorisationToken: authorisationToken.Value,
 		MediumID:           options.CardNumber,
@@ -143,15 +143,7 @@ func (service TransactionFetcherAPIService) getTransactions(authorisationToken a
 		records = append(records, transactions.Response.Records...)
 	}
 
-	// Enriching records
-	source := rawRecordSourceCSV
-	for _, record := range records {
-		transactionID := NewTransactionID()
-		record.Source = &source
-		record.TransactionID = &transactionID
-	}
-
-	return &records, nil
+	return records, nil
 }
 
 func (service TransactionFetcherAPIService) getTransaction(payload transactionsPayload) (transactionsResponse *transactionsResponse, err error) {

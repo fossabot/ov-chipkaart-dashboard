@@ -2,9 +2,13 @@ package main
 
 import (
 	"crypto/md5"
+	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/labstack/gommon/log"
 )
 
 // DBTimestamp stores the timestamp when persisting objects in the DB
@@ -25,25 +29,25 @@ type TransactionFetchOptions struct {
 // RawRecord represents a transaction record
 type RawRecord struct {
 	DBTimestamp
-	ID                     *TransactionID   `bson:"id"`
-	TransactionID          *TransactionID   `bson:"transaction_id"`
-	CheckInInfo            string           `json:"checkInInfo" bson:"check_in_info"`
-	CheckInText            string           `json:"checkInText" bson:"check_in_text"`
-	Fare                   *float64         `json:"fare" bson:"fare"`
-	FareCalculation        string           `json:"fareCalculation" bson:"fare_calculation"`
-	FareText               string           `json:"fareText" bson:"fare_text"`
-	ModalType              string           `json:"modalType" bson:"modal_type"`
-	ProductInfo            string           `json:"productInfo" bson:"product_info"`
-	ProductText            string           `json:"productText" bson:"product_text"`
-	Pto                    string           `json:"pto" bson:"product_text"`
-	TransactionDateTime    int64            `json:"transactionDateTime" bson:"transaction_timestamp"`
-	TransactionInfo        string           `json:"transactionInfo" bson:"transaction_info"`
-	TransactionName        TransactionName  `json:"transactionName" bson:"transaction_name"`
-	EPurseMut              *float64         `json:"ePurseMut" bson:"e_purse_mut"`
-	EPurseMutInfo          string           `json:"ePurseMutInfo" bson:"e_purse_mut_info"`
-	TransactionExplanation string           `json:"transactionExplanation" bson:"transaction_explanation"`
-	TransactionPriority    string           `json:"transactionPriority" bson:"transaction_priority"`
-	Source                 *RawRecordSource `bson:"source"`
+	ID                     *TransactionID     `bson:"id"`
+	TransactionID          *TransactionID     `bson:"transaction_id"`
+	CheckInInfo            string             `json:"checkInInfo" bson:"check_in_info"`
+	CheckInText            string             `json:"checkInText" bson:"check_in_text"`
+	Fare                   *float64           `json:"fare" bson:"fare"`
+	FareCalculation        string             `json:"fareCalculation" bson:"fare_calculation"`
+	FareText               string             `json:"fareText" bson:"fare_text"`
+	ModalType              string             `json:"modalType" bson:"modal_type"`
+	ProductInfo            string             `json:"productInfo" bson:"product_info"`
+	ProductText            string             `json:"productText" bson:"product_text"`
+	Pto                    string             `json:"pto" bson:"pto"`
+	TransactionDateTime    TimeInMilliSeconds `json:"transactionDateTime" bson:"transaction_timestamp"`
+	TransactionInfo        string             `json:"transactionInfo" bson:"transaction_info"`
+	TransactionName        TransactionName    `json:"transactionName" bson:"transaction_name"`
+	EPurseMut              *float64           `json:"ePurseMut" bson:"e_purse_mut"`
+	EPurseMutInfo          string             `json:"ePurseMutInfo" bson:"e_purse_mut_info"`
+	TransactionExplanation string             `json:"transactionExplanation" bson:"transaction_explanation"`
+	TransactionPriority    string             `json:"transactionPriority" bson:"transaction_priority"`
+	Source                 *RawRecordSource   `bson:"source"`
 }
 
 // IsCheckIn determines if a record is a check in record
@@ -61,6 +65,16 @@ func (record RawRecord) IsCheckOut() bool {
 	return record.TransactionName.IsTheSameAs(transactionNameCheckOut)
 }
 
+// IsRET is used to determine if a raw record is from the RET company
+func (record RawRecord) IsRET() bool {
+	return record.Pto == companyNameRET.String()
+}
+
+// IsNS is used to determine if a raw record is from the NS company
+func (record RawRecord) IsNS() bool {
+	return record.Pto == companyNameNS.String() && record.ModalType == "Trein"
+}
+
 // HTTPClient is the class used to perform http requests
 type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
@@ -73,7 +87,7 @@ type RawRecordsRepository interface {
 
 // NSJourneyPrice represents the price for an NS journey
 type NSJourneyPrice struct {
-	DBTimestamp
+	DBTimestamp                   `bson:"db_timestamp,omitempty"`
 	Year                          string `bson:"year"`
 	FromStationCode               string `bson:"from_station_code"`
 	ToStationCode                 string `bson:"to_station_code"`
@@ -86,8 +100,8 @@ type NSJourneyPrice struct {
 	Hash                          string `bson:"hash"`
 }
 
-// EstimateDurationInMilliSeconds gives an estimate of the duration of a journey based on the price
-func (price NSJourneyPrice) EstimateDurationInMilliSeconds() int {
+// EstimatedDurationInMilliSeconds gives an estimate of the duration of a journey based on the price
+func (price NSJourneyPrice) EstimatedDurationInMilliSeconds() int {
 	return (price.SecondClassSingleFarePrice - basicFare) * costMultiplier * 60 * 1000
 }
 
@@ -97,7 +111,7 @@ type NSPricesRepository interface {
 	GetByHash(hash string) (price NSJourneyPrice, err error)
 }
 
-// NSStationsRepository is responsible for saving and loading NSStation structs
+// NSStationsRepository is responsible for saving and loading NSStation struct
 type NSStationsRepository interface {
 	Store(stations []NSStation) (err error)
 	GetByName(name string) (station NSStation, err error)
@@ -167,8 +181,18 @@ func NewNSJourney(timestamp time.Time, fromStationCode, toStationCode string) NS
 
 // ToMap converts  the JS journey struct to a `map[string]string` map
 func (journey NSJourney) ToMap() map[string]string {
+	date := journey.date.Format(dateFormat)
+	if journey.date.Year() < time.Now().Year() {
+		parsed, err := time.Parse(dateFormat, strconv.Itoa(time.Now().Year()-1)+"-12-30")
+		if err == nil {
+			log.Printf("cannot parse %f as date", strconv.Itoa(time.Now().Year()-1)+"-12-30")
+			date = parsed.Format(dateFormat)
+		}
+	}
+
+	log.Printf("date =  %s\n", date)
 	return map[string]string{
-		"date":        journey.date.Format(dateFormat),
+		"date":        date,
 		"toStation":   journey.FromStationCode,
 		"fromStation": journey.ToStationCode,
 	}
@@ -176,8 +200,7 @@ func (journey NSJourney) ToMap() map[string]string {
 
 // NSPriceHash gets the hash for an ns journey used to determine the price of the journey
 func (journey NSJourney) NSPriceHash() string {
-	hashBytes := md5.Sum([]byte(journey.FromStationCode + hashSeparator + journey.ToStationCode + hashSeparator + journey.Year))
-	return string(hashBytes[:])
+	return fmt.Sprintf("%x", md5.Sum([]byte(journey.FromStationCode+hashSeparator+journey.ToStationCode+hashSeparator+journey.Year)))
 }
 
 //////////////////////////
@@ -186,13 +209,18 @@ func (journey NSJourney) NSPriceHash() string {
 
 // EnrichedRecord represents an enriched record.
 type EnrichedRecord struct {
-	RawRecordID      TransactionID
-	TransactionID    TransactionID
-	ID               TransactionID
-	StartTime        int64
-	StartTimeIsExact bool
-	CompanyName      CompanyName
-	TransactionType  TransactionType
+	DBTimestamp      `bson:"db_timestamp,omitempty"`
+	RawRecordID      *TransactionID     `bson:"raw_record_id"`
+	TransactionID    *TransactionID     `bson:"transaction_id"`
+	ID               *TransactionID     `bson:"id"`
+	StartTime        TimeInMilliSeconds `bson:"start_time"`
+	EndTime          TimeInMilliSeconds `bson:"end_time"`
+	StartTimeIsExact bool               `bson:"start_time_is_exact"`
+	FromStationCode  string             `bson:"from_station_code"`
+	ToStationCode    string             `bson:"to_station_code"`
+	CompanyName      CompanyName        `bson:"company_name"`
+	TransactionType  TransactionType    `bson:"transaction_type"`
+	Duration         int64              `bson:"duration"`
 }
 
 // RawRecordsEnrichmentService is the interface for filtering raw records
@@ -213,7 +241,9 @@ func (results RawRecordsEnrichmentResults) HasError() bool {
 
 // GetRawRecordsOptions are settings that are passed to the RawRecordsRepository
 type GetRawRecordsOptions struct {
-	SortBy string
+	TransactionID TransactionID
+	SortBy        string
+	SortDirection string
 }
 
 // EnrichedRecordsRepository fetches enriched records.

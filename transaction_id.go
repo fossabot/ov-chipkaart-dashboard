@@ -17,6 +17,29 @@ func (id TransactionID) String() (result string, err error) {
 	return val.String(), nil
 }
 
+//
+//func (id TransactionID) MarshalBSONValue() (bsontype.Type, []byte, error) {
+//	log.Println("how are you doing today")
+//	_, err :=  id.String()
+//	if err != nil {
+//		return bsontype.String, nil, err
+//	}
+//
+//	log.Println("debugging")
+//	return bsontype.String, bsoncore.AppendString(nil, `how`), nil
+//}
+//
+//
+//func (id *TransactionID) UnmarshalBSONValue(bsonType bsontype.Type, bytes []byte) error {
+//	uid, err := uuid.FromBytes(bytes)
+//	if err != nil {
+//		return err
+//	}
+//
+//	*id = TransactionID(uid)
+//	return nil
+//}
+
 // NewTransactionID generates a new UUID
 func NewTransactionID() TransactionID {
 	return TransactionID(uuid.New())

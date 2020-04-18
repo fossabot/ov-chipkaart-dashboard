@@ -14,7 +14,8 @@ func (companyName CompanyName) String() string {
 }
 
 const (
-	companyNameNS = CompanyName("NS")
+	companyNameNS  = CompanyName("NS")
+	companyNameRET = CompanyName("RET")
 )
 
 // TransactionType represents the type of transaction
@@ -29,6 +30,19 @@ const (
 	transactionTypeTravel     = TransactionType("Travel")
 	transactionTypeSupplement = TransactionType("Supplement")
 )
+
+// TimeInMilliSeconds represents time in milliseconds
+type TimeInMilliSeconds int
+
+// ToTime converts time in milliseconds to a time object
+func (t TimeInMilliSeconds) ToTime() time.Time {
+	return time.Unix(0, int64(t)*1000000)
+}
+
+// ToInt64 converts time in milliseconds to an int64 value
+func (t TimeInMilliSeconds) ToInt64() int64 {
+	return int64(t)
+}
 
 // TransactionName  represents the various transaction names
 type TransactionName string

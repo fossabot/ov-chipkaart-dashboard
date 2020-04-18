@@ -19,25 +19,27 @@ func NewMongoNSEnrichedRecordsRepository(db *mongo.Database, collection string, 
 }
 
 // Store stores an NSJourneyPrice object into the mongodb repository
-func (repository *MongoNSEnrichedRecordsRepository) Store(price NSJourneyPrice) (err error) {
-	document, err := repository.bsonService.EncodeToBsonM(price)
-	if err != nil {
-		return errors.Wrap(err, "cannot convert struct to bson.M")
+func (repository *MongoNSEnrichedRecordsRepository) Store(records []EnrichedRecord) (err error) {
+	var documents []interface{}
+	for _, record := range records {
+		document, err := repository.bsonService.EncodeToBsonM(record)
+		if err != nil {
+			return errors.Wrapf(err, "cannot convert record to map")
+		}
+
+		document = repository.SetTimestampFields(document)
+
+		documents = append(documents, document)
 	}
-
-	document = repository.SetTimestampFields(document)
-
-	ctx, _ := context.WithTimeout(context.Background(), dbOperationTimeout)
-
-	_, err = repository.db.Collection(repository.collection).InsertOne(ctx, document)
+	_, err = repository.db.Collection(repository.collection).InsertMany(context.Background(), documents)
 	if err != nil {
-		return errors.Wrapf(err, "cannot insert document into db")
+		return errors.Wrapf(err, "cannot insert documents into db")
 	}
 
 	return nil
 }
 
-// GetByTransactionID returns the price of an NS journey repository based on the journey hash
+// GetByTransactionID returns []EnrichedRecord based on on the transaction id
 func (repository *MongoNSEnrichedRecordsRepository) GetByTransactionID(id TransactionID) (enrichedRecords []EnrichedRecord, err error) {
 	transactionID, err := id.String()
 	if err != nil {
@@ -53,7 +55,7 @@ func (repository *MongoNSEnrichedRecordsRepository) GetByTransactionID(id Transa
 
 	for cursor.Next(ctx) {
 		var record EnrichedRecord
-		err := cursor.Decode(&EnrichedRecord{})
+		err := cursor.Decode(&record)
 		if err != nil {
 			return enrichedRecords, errors.Wrap(err, "cannot decode to bson.M to enriched record")
 		}
