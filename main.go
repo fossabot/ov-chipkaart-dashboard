@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-
-	//"github.com/google/uuid"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/gofrs/uuid"
 
 	lfucache "github.com/NdoleStudio/lfu-cache"
 	"github.com/getsentry/sentry-go"
@@ -45,21 +44,21 @@ func main() {
 	bsonService := BsonService{}
 	nsStationsRepository := NewMongoNSStationsRepository(mongodb, collectionNSStations, bsonService)
 	//
-	//log.Printf("Fetching Stations")
+	log.Printf("Fetching Stations")
 	nsClient := NewNSAPIClient(&http.Client{}, os.Getenv("NS_API_KEY_PUBLIC_TRAVEL_INFORMATION"))
-	//log.Printf("Stations fetch finished")
-	//
-	//stations, err := nsClient.GetAllStations()
-	//if err != nil {
-	//	log.Fatalf(err.Error())
-	//}
-	//
-	//log.Printf("Storing stations in the database")
-	//err = nsStationsRepository.Store(stations)
-	//if err != nil {
-	//	log.Fatalf(err.Error())
-	//}
-	//log.Printf("Finished storing stations")
+	log.Printf("Stations fetch finished")
+
+	stations, err := nsClient.GetAllStations()
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	log.Printf("Storing stations in the database")
+	err = nsStationsRepository.Store(stations)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+	log.Printf("Finished storing stations")
 	//
 	rawRecordsRepository := NewRawRecordsRepository(mongodb, collectionRawRecords, bsonService)
 	pricesRepository := NewMongoNSPricesRepository(mongodb, collectionNSPrices, bsonService)
@@ -72,50 +71,48 @@ func main() {
 	enrichmentService := NewNSRawRecordsEnrichmentService(stationCodeService, priceFetcher)
 
 	//
-	//config := TransactionFetcherAPIServiceConfig{
-	//	ClientID:     os.Getenv("CLIENT_ID"),
-	//	ClientSecret: os.Getenv("CLIENT_SECRET"),
-	//	Locale:       localeEnglish,
-	//	Client:       &http.Client{},
-	//}
-	//apiService := NewAPIService(config)
-	//
-	//transactionConfig := TransactionFetchOptions{
-	//	Username:   os.Getenv("OV_CHIPKAAT_USERNAME"),
-	//	Password:   os.Getenv("OV_CHIPKAAT_PASSWORD"),
-	//	CardNumber: os.Getenv("OV_CHIPKAAT_CARD_NUMBER"),
-	//	StartDate:  time.Unix(0, 0),
-	//	EndDate:    time.Now(),
-	//}
-	//
+	config := TransactionFetcherAPIServiceConfig{
+		ClientID:     os.Getenv("CLIENT_ID"),
+		ClientSecret: os.Getenv("CLIENT_SECRET"),
+		Locale:       localeEnglish,
+		Client:       &http.Client{},
+	}
+	apiService := NewAPIService(config)
+
+	transactionConfig := TransactionFetchOptions{
+		Username:   os.Getenv("OV_CHIPKAAT_USERNAME"),
+		Password:   os.Getenv("OV_CHIPKAAT_PASSWORD"),
+		CardNumber: os.Getenv("OV_CHIPKAAT_CARD_NUMBER"),
+		StartDate:  time.Unix(0, 0),
+		EndDate:    time.Now(),
+	}
 
 	globalTransactionID := NewTransactionID()
 
 	//
-	//log.Println("Fetching Transactions")
-	//records, err := apiService.FetchTransactions(transactionConfig)
-	//if err != nil {
-	//	log.Panicf(errors.Wrapf(err, "%+v", err).Error())
-	//}
-	//log.Println("Finished Fetching transactions")
-	//
-	//// Enriching records
-	//source := rawRecordSourceAPI
-	//transactionID := globalTransactionID
-	//for index := range records {
-	//	recordID := NewTransactionID()
-	//	records[index].TransactionID = &transactionID
-	//	records[index].Source = &source
-	//	records[index].ID = &recordID
-	//}
-	//
-	//
-	//log.Println(len(records))
-	//log.Println("Inserting into database")
-	//err = rawRecordsRepository.Store(records)
-	//if err != nil {
-	//	log.Panicf(errors.Wrapf(err, "%+v", err).Error())
-	//}
+	log.Println("Fetching Transactions")
+	records, err := apiService.FetchTransactions(transactionConfig)
+	if err != nil {
+		log.Panicf(errors.Wrapf(err, "%+v", err).Error())
+	}
+	log.Println("Finished Fetching transactions")
+
+	// Enriching records
+	source := rawRecordSourceAPI
+	transactionID := globalTransactionID
+	for index := range records {
+		recordID := NewTransactionID()
+		records[index].TransactionID = &transactionID
+		records[index].Source = &source
+		records[index].ID = &recordID
+	}
+
+	log.Println(len(records))
+	log.Println("Inserting into database")
+	err = rawRecordsRepository.Store(records)
+	if err != nil {
+		log.Panicf(errors.Wrapf(err, "%+v", err).Error())
+	}
 
 	id, err := uuid.FromString("e7474312-00b4-4b49-ac1d-429d74111b85")
 	if err != nil {
@@ -131,15 +128,15 @@ func main() {
 	}
 
 	log.Println("fetching raw records from DB")
-	records, err := rawRecordsRepository.GetByTransactionID(getOptions)
+	rawRecords, err := rawRecordsRepository.GetByTransactionID(getOptions)
 	if err != nil {
 		errorHandler.HandleHardError(err)
 	}
 
-	log.Printf("%d raw records fetched\n", len(records))
+	log.Printf("%d raw records fetched\n", len(rawRecords))
 
 	log.Println("Fetching enriched records")
-	enrichmentResult := enrichmentService.Enrich(records)
+	enrichmentResult := enrichmentService.Enrich(rawRecords)
 	log.Println("Finished enriching records")
 
 	log.Printf("%d enriched records and %d failed records\n", len(enrichmentResult.ValidRecords), len(enrichmentResult.Error.ErrorRecords))
