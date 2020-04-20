@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"log"
 	"net/http"
 	"os"
@@ -53,6 +55,13 @@ func main() {
 	priceFetcher := NewNSPriceFetcher(nsClient, pricesRepository, errorHandler, cache)
 	stationCodeService := NewNSStationsCodeService(stationsRepository, errorHandler, cache)
 	enrichmentService := NewNSRawRecordsEnrichmentService(stationCodeService, priceFetcher)
+
+	temp, err := uuid.Parse("54b2c48e-676c-446b-a47f-07ad883cba5f")
+	if err != nil {
+		errorHandler.HandleHardError(err)
+	}
+
+	log.Println(temp.String())
 
 	log.Println("Fetchigng first transaction")
 	id, err := rawRecordsRepository.First()

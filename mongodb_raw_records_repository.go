@@ -59,7 +59,7 @@ func (repository *MongodbRawRecordsRepository) GetByTransactionID(getOptions Get
 	findOptions.SetSort(bson.D{{getOptions.SortBy, order}})
 
 	ctx := context.Background()
-	cursor, err := repository.db.Collection(repository.collection).Find(ctx, bson.M{"transaction_id": getOptions.TransactionID}, findOptions)
+	cursor, err := repository.db.Collection(repository.collection).Find(ctx, bson.M{"transaction_id": getOptions.TransactionID.String()}, findOptions)
 	if err != nil {
 		return rawRecords, err
 	}

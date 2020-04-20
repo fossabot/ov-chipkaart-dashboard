@@ -133,21 +133,23 @@ type LFUCache interface {
 // NSStation contains info for an NSStation
 type NSStation struct {
 	DBTimestamp
-	Name          string  `bson:"name"`
-	Code          string  `bson:"code"`
-	Country       string  `bson:"country"`
-	EVACode       string  `bson:"eva_code"`
-	Latitude      float64 `bson:"latitude"`
-	Longitude     float64 `bson:"longitude"`
-	StartIngDate  string  `bson:"starting_date"`
-	UICCode       string  `bson:"UICCode"`
-	IsDepreciated bool    `bson:"is_depreciated"`
-	CurrentName   string  `bson:"current_name"`
+	ID            TransactionID `bson:"id"`
+	Name          string        `bson:"name"`
+	Code          string        `bson:"code"`
+	Country       string        `bson:"country"`
+	EVACode       string        `bson:"eva_code"`
+	Latitude      float64       `bson:"latitude"`
+	Longitude     float64       `bson:"longitude"`
+	StartIngDate  string        `bson:"starting_date"`
+	UICCode       string        `bson:"UICCode"`
+	IsDepreciated bool          `bson:"is_depreciated"`
+	CurrentName   string        `bson:"current_name"`
 }
 
 // ToLower converts the NSStation struct values to lowercase
 func (station NSStation) ToLower() NSStation {
 	return NSStation{
+		ID:            station.ID,
 		Name:          strings.ToLower(station.Name),
 		Code:          strings.ToLower(station.Code),
 		Country:       strings.ToLower(station.Country),

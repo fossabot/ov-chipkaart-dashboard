@@ -26,10 +26,7 @@ func (repository *MongoNSEnrichedRecordsRepository) Store(records []EnrichedReco
 		if err != nil {
 			return errors.Wrapf(err, "cannot convert record to map")
 		}
-
-		document = repository.SetTimestampFields(document)
-
-		documents = append(documents, document)
+		documents = append(documents, repository.SetTimestampFields(document))
 	}
 	_, err = repository.db.Collection(repository.collection).InsertMany(context.Background(), documents)
 	if err != nil {
@@ -41,13 +38,8 @@ func (repository *MongoNSEnrichedRecordsRepository) Store(records []EnrichedReco
 
 // GetByTransactionID returns []EnrichedRecord based on on the transaction id
 func (repository *MongoNSEnrichedRecordsRepository) GetByTransactionID(id TransactionID) (enrichedRecords []EnrichedRecord, err error) {
-	transactionID, err := id.String()
-	if err != nil {
-		return enrichedRecords, errors.Wrap(err, "cannot convert transaction id to string")
-	}
-
 	ctx, _ := context.WithTimeout(context.Background(), dbOperationTimeout)
-	cursor, err := repository.db.Collection(repository.collection).Find(ctx, bson.M{"transaction_id": transactionID})
+	cursor, err := repository.db.Collection(repository.collection).Find(ctx, bson.M{"transaction_id": id.String()})
 	if err != nil {
 		return enrichedRecords, err
 	}

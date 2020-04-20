@@ -211,6 +211,7 @@ func (service NSAPIClient) GetAllStations() (stations []NSStation, error error) 
 
 	for _, station := range allStationsRaw.Payload {
 		stations = append(stations, NSStation{
+			ID:            NewTransactionID(),
 			Name:          station.Namen.Lang,
 			CurrentName:   station.Namen.Lang,
 			Code:          station.Code,

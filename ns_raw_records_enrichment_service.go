@@ -45,17 +45,14 @@ func (service NSRawRecordsEnrichmentService) Enrich(records []RawRecord) (result
 	//spew.Dump(counter)
 	var prev RawRecord
 
-	rateLimiter := ratelimit.New(100)
+	rateLimiter := ratelimit.New(5)
 	for _, record := range records {
 		rateLimiter.Take()
 		rawRecordID := record.ID
 		transactionID := record.TransactionID
 		enrichedRecordID := NewTransactionID()
 
-		idString, err := rawRecordID.String()
-		if err != nil {
-			log.Fatal(err)
-		}
+		idString := rawRecordID.String()
 		log.Println("Processing ID: ", idString)
 
 		// Check if record is check-in record Record
@@ -128,7 +125,7 @@ func (service NSRawRecordsEnrichmentService) getEnrichedNsRecord(prev, record Ra
 	if prev.IsCheckIn() && record.IsNS() && prev.TransactionInfo == record.CheckInInfo {
 		startTime = prev.TransactionDateTime.ToInt64()
 		startTimeIsExact = true
-		log.Fatalf("how are you")
+		log.Println("record id = ", record.ID.String())
 	} else {
 		log.Println("here")
 		log.Println(prev.IsCheckIn())
