@@ -15,8 +15,8 @@ type MongodbRawRecordsRepository struct {
 	MongodbRepository
 }
 
-// NewRawRecordsRepository is used to initialize this class
-func NewRawRecordsRepository(db *mongo.Database, collection string, bsonService BsonService) *MongodbRawRecordsRepository {
+// NewMongodbRawRecordsRepository is used to initialize this class
+func NewMongodbRawRecordsRepository(db *mongo.Database, collection string, bsonService BsonService) *MongodbRawRecordsRepository {
 	return &MongodbRawRecordsRepository{MongodbRepository{db, collection, bsonService}}
 }
 

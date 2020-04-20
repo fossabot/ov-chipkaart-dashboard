@@ -2,9 +2,6 @@ package main
 
 import (
 	"context"
-
-	"github.com/google/uuid"
-
 	"log"
 	"net/http"
 	"os"
@@ -23,7 +20,7 @@ const localeEnglish = "en-EN"
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("error loading .env file")
 	}
 
 	err = sentry.Init(sentry.ClientOptions{Dsn: os.Getenv("SENTRY_DSN")})
@@ -46,7 +43,11 @@ func main() {
 
 	bsonService := NewBsonService()
 	errorHandler := NewSentryErrorHandler()
-	rawRecordsRepository := NewRawRecordsRepository(mongodb, collectionRawRecords, bsonService)
+	rawRecordsRepository := NewMongodbRawRecordsRepository(mongodb, collectionRawRecords, bsonService)
+
+	raw := InitializeRawRecords(collectionRawRecords, mongodb)
+	_, _ = raw.First()
+
 	enrichedRecordsRepository := NewMongoNSEnrichedRecordsRepository(mongodb, collectionNSEnrichedRecords, bsonService)
 	cache, err := lfucache.New(100)
 	nsClient := NewNSAPIClient(&http.Client{}, os.Getenv("NS_API_KEY_PUBLIC_TRAVEL_INFORMATION"))
@@ -56,14 +57,7 @@ func main() {
 	stationCodeService := NewNSStationsCodeService(stationsRepository, errorHandler, cache)
 	enrichmentService := NewNSRawRecordsEnrichmentService(stationCodeService, priceFetcher)
 
-	temp, err := uuid.Parse("54b2c48e-676c-446b-a47f-07ad883cba5f")
-	if err != nil {
-		errorHandler.HandleHardError(err)
-	}
-
-	log.Println(temp.String())
-
-	log.Println("Fetchigng first transaction")
+	log.Println("Fetching first transaction")
 	id, err := rawRecordsRepository.First()
 	if err != nil {
 		errorHandler.HandleHardError(err)
@@ -121,7 +115,7 @@ func loadNsStations(mongodb *mongo.Database) {
 
 func storeNSTransactions(mongodb *mongo.Database) {
 	bsonService := NewBsonService()
-	rawRecordsRepository := NewRawRecordsRepository(mongodb, collectionRawRecords, bsonService)
+	rawRecordsRepository := NewMongodbRawRecordsRepository(mongodb, collectionRawRecords, bsonService)
 
 	//
 	config := TransactionFetcherAPIServiceConfig{

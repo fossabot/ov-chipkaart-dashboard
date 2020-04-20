@@ -83,6 +83,8 @@ type HTTPClient interface {
 // RawRecordsRepository is used to persist raw transaction records
 type RawRecordsRepository interface {
 	Store(records []RawRecord) (err error)
+	First() (rawRecord RawRecord, err error)
+	GetByTransactionID(getOptions GetRawRecordsOptions) (rawRecords []RawRecord, err error)
 }
 
 // NSJourneyPrice represents the price for an NS journey
