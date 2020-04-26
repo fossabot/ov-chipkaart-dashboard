@@ -11,13 +11,17 @@
 - [X] Create NS transactions filter
 - [X] Create enrichment step for NS transactions
 - [X] Create ability to store Enriched NS transactions
-- [ ] Use dependency injection for components
 - [ ] Create ability to process NS transactions without discount
 - [ ] Create ability to process NS transactions (Dal Voordeel)
 - [ ] Create ability to process NS transactions with 20% discount with weekends (Altijd voordeel)
 - [ ] Create ability to filter all off peak NS transactions (Dal Vrij)
-- [ ] Implement LFU cache with O(1) complexity
 
+### V.15
+- [ ] Use dependency injection for components
+- [ ] Separate components into services and communicate using gRPC
+- [ ] Add Monitoring and email service
+- [ ] Use gRPC for near real time services
+- [ ] Use a message broker for faster services
 
 ### V2
 - [ ] Create ability to process RET transactions
@@ -28,3 +32,4 @@
 ### Blogging
 
 - [ ] LFU Cache implementation and use
+- [ ] Architectural design and considerations

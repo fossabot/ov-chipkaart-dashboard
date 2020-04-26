@@ -34,15 +34,6 @@ func (service NSRawRecordsEnrichmentService) Enrich(records []RawRecord) (result
 		}
 	}
 
-	//counter := 0
-	//var newRecords []RawRecord
-	//for _, record := range records {
-	//	if record.IsNS(){
-	//		newRecords = append(newRecords, record)
-	//		counter++
-	//	}
-	//}
-	//spew.Dump(counter)
 	var prev RawRecord
 
 	rateLimiter := ratelimit.New(5)
@@ -125,13 +116,7 @@ func (service NSRawRecordsEnrichmentService) getEnrichedNsRecord(prev, record Ra
 	if prev.IsCheckIn() && record.IsNS() && prev.TransactionInfo == record.CheckInInfo {
 		startTime = prev.TransactionDateTime.ToInt64()
 		startTimeIsExact = true
-		log.Println("record id = ", record.ID.String())
 	} else {
-		log.Println("here")
-		log.Println(prev.IsCheckIn())
-		log.Println(prev.IsCheckIn() && record.IsNS())
-		log.Println(prev.TransactionInfo)
-		log.Println(record.CheckInInfo)
 		startTimeIsExact = false
 	}
 
