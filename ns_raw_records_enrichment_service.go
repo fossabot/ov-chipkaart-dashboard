@@ -60,6 +60,7 @@ func (service NSRawRecordsEnrichmentService) Enrich(records []RawRecord) (result
 				TransactionID:    transactionID,
 				ID:               &enrichedRecordID,
 				StartTime:        record.TransactionDateTime,
+				EndTime:          record.TransactionDateTime,
 				StartTimeIsExact: true,
 				CompanyName:      companyNameNS,
 				TransactionType:  transactionTypeSupplement,
@@ -110,7 +111,7 @@ func (service NSRawRecordsEnrichmentService) Enrich(records []RawRecord) (result
 	}
 }
 
-func (service NSRawRecordsEnrichmentService) getEnrichedNsRecord(prev, record RawRecord, rawRecordID, transactionID, newTransactionID *TransactionID) (enrichedRecord EnrichedRecord, errorRecord ErrorRecord) {
+func (service NSRawRecordsEnrichmentService) getEnrichedNsRecord(prev, record RawRecord, rawRecordID, transactionID, newTransactionID *TransactionID) (enrichedRecord EnrichedRecord, errorRecord ErrorRawRecord) {
 	var startTime int64
 	var startTimeIsExact = false
 	if prev.IsCheckIn() && record.IsNS() && prev.TransactionInfo == record.CheckInInfo {
@@ -126,7 +127,7 @@ func (service NSRawRecordsEnrichmentService) getEnrichedNsRecord(prev, record Ra
 	fromStation, err := service.stationsCodeService.GetCodeForStationName(record.CheckInInfo)
 	if err != nil {
 		log.Println("error returned")
-		return enrichedRecord, ErrorRecord{
+		return enrichedRecord, ErrorRawRecord{
 			Record: record,
 			Error:  errors.Wrapf(err, "cannot get code for station: %s", record.CheckInInfo),
 		}
@@ -135,7 +136,7 @@ func (service NSRawRecordsEnrichmentService) getEnrichedNsRecord(prev, record Ra
 	log.Printf("Fetching to station name for %s ", record.TransactionInfo)
 	toStation, err := service.stationsCodeService.GetCodeForStationName(record.TransactionInfo)
 	if err != nil {
-		return enrichedRecord, ErrorRecord{
+		return enrichedRecord, ErrorRawRecord{
 			Record: record,
 			Error:  errors.Wrapf(err, "cannot get code for station: %s", record.TransactionInfo),
 		}
@@ -146,7 +147,7 @@ func (service NSRawRecordsEnrichmentService) getEnrichedNsRecord(prev, record Ra
 	if !startTimeIsExact {
 		price, err := service.priceFetcher.FetchPrice(journey)
 		if err != nil {
-			return enrichedRecord, ErrorRecord{
+			return enrichedRecord, ErrorRawRecord{
 				Record: record,
 				Error:  errors.Wrap(err, "cannot fetch price for journey"),
 			}

@@ -11,8 +11,14 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeRawRecords(collection string, db *mongo.Database) RawRecordsRepository {
+func InitializeRawRecordsRepository(collection string, db *mongo.Database) RawRecordsRepository {
 	bsonService := NewBsonService()
 	mongodbRawRecordsRepository := NewMongodbRawRecordsRepository(db, collection, bsonService)
 	return mongodbRawRecordsRepository
+}
+
+func InitializeNationalHolidaysRepository(collection string, db *mongo.Database) NationalHolidaysRepository {
+	bsonService := NewBsonService()
+	mongoNationalHolidaysRepository := NewMongoNationalHolidaysRepository(db, collection, bsonService)
+	return mongoNationalHolidaysRepository
 }

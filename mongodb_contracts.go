@@ -22,6 +22,7 @@ const (
 	collectionNSStations        = "ns_stations"
 	collectionNSPrices          = "ns_journey_prices"
 	collectionNSEnrichedRecords = "ns_enriched_records"
+	collectionNationalHolidays  = "national_holidays"
 )
 
 // db keys names

@@ -227,6 +227,21 @@ type EnrichedRecord struct {
 	Duration         time.Duration      `bson:"duration"`
 }
 
+// NSJourney returns the NSJourney for a given enriched record
+func (record EnrichedRecord) NSJourney() NSJourney {
+	return NewNSJourney(record.StartTime.ToTime(), record.FromStationCode, record.ToStationCode)
+}
+
+// IsSupplement determines if the enriched record is a supplement
+func (record EnrichedRecord) IsSupplement() bool {
+	return record.TransactionType == transactionTypeSupplement
+}
+
+// IsNSJourney determines if the enriched record is an NSJourney
+func (record EnrichedRecord) IsNSJourney() bool {
+	return record.TransactionType == transactionTypeTravel
+}
+
 // RawRecordsEnrichmentService is the interface for filtering raw records
 type RawRecordsEnrichmentService interface {
 	Enrich(records []RawRecord) RawRecordsEnrichmentResults
@@ -253,4 +268,25 @@ type GetRawRecordsOptions struct {
 // EnrichedRecordsRepository fetches enriched records.
 type EnrichedRecordsRepository interface {
 	Store(records []EnrichedRecord) (err error)
+}
+
+/////////////////////////
+// Calculation Service //
+/////////////////////////
+
+// Holiday is a struct which represents a holiday
+type Holiday struct {
+	DBTimestamp
+	ID        TransactionID `bson:"id"`
+	Timestamp time.Time     `bson:"timestamp"`
+	Name      string        `bson:"name"`
+	Date      string        `bson:"date"`
+	Country   string        `bson:"country"`
+}
+
+// NationalHolidaysRepository  is the repository for storing/persisting national holidays.
+type NationalHolidaysRepository interface {
+	Store(holidays []Holiday) (err error)
+	HasHoliday(timestamp time.Time) (result bool, err error)
+	GetByTimestamp(timestamp time.Time) (holiday Holiday, err error)
 }

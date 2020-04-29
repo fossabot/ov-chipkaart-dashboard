@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"go.uber.org/ratelimit"
+
 	lfucache "github.com/NdoleStudio/lfu-cache"
 	"github.com/getsentry/sentry-go"
 	"github.com/joho/godotenv"
@@ -40,13 +42,13 @@ func main() {
 	mongodb := client.Database(os.Getenv("MONGODB_DB_NAME"))
 	//loadNsStations(mongodb)
 	//storeNSTransactions(mongodb)
+	storeNationalHolidays(mongodb)
+
+	log.Fatalf("logging out")
 
 	bsonService := NewBsonService()
 	errorHandler := NewSentryErrorHandler()
-	rawRecordsRepository := NewMongodbRawRecordsRepository(mongodb, collectionRawRecords, bsonService)
-
-	raw := InitializeRawRecords(collectionRawRecords, mongodb)
-	_, _ = raw.First()
+	rawRecordsRepository := InitializeRawRecordsRepository(collectionRawRecords, mongodb)
 
 	enrichedRecordsRepository := NewMongoNSEnrichedRecordsRepository(mongodb, collectionNSEnrichedRecords, bsonService)
 	cache, err := lfucache.New(100)
@@ -93,6 +95,25 @@ func main() {
 	log.Println("Finished storing of enriched records")
 }
 
+func storeNationalHolidays(db *mongo.Database) {
+	nationalHolidaysRepository := InitializeNationalHolidaysRepository(collectionNationalHolidays, db)
+	holidaysClient := NewCalendarificAPIClient(os.Getenv("CALENDARIFIC_API_KEY"), &http.Client{})
+
+	rateLimiter := ratelimit.New(1)
+	for i := 0; i < 3; i++ {
+		rateLimiter.Take()
+
+		holidays, err := holidaysClient.FetchNationalHolidays(time.Now().AddDate(i-1, 0, 0))
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		err = nationalHolidaysRepository.Store(holidays)
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+	}
+}
 func loadNsStations(mongodb *mongo.Database) {
 	bsonService := BsonService{}
 	nsStationsRepository := NewMongoNSStationsRepository(mongodb, collectionNSStations, bsonService)
