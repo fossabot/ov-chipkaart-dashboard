@@ -6,6 +6,8 @@
 package main
 
 import (
+	lfucache "github.com/NdoleStudio/lfu-cache"
+	"github.com/labstack/gommon/log"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -21,4 +23,20 @@ func InitializeNationalHolidaysRepository(collection string, db *mongo.Database)
 	bsonService := NewBsonService()
 	mongoNationalHolidaysRepository := NewMongoNationalHolidaysRepository(db, collection, bsonService)
 	return mongoNationalHolidaysRepository
+}
+
+func InitializeEnrichedRecordsRepository(collection string, db *mongo.Database) EnrichedRecordsRepository {
+	bsonService := NewBsonService()
+	mongoNSEnrichedRecordsRepository := NewMongoNSEnrichedRecordsRepository(db, collection, bsonService)
+	return mongoNSEnrichedRecordsRepository
+}
+
+// wire.go:
+
+func InitializeCache(size int) LFUCache {
+	cache, err := lfucache.New(size)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+	return cache
 }

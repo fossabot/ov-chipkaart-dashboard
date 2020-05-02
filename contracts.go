@@ -268,6 +268,7 @@ type GetRawRecordsOptions struct {
 // EnrichedRecordsRepository fetches enriched records.
 type EnrichedRecordsRepository interface {
 	Store(records []EnrichedRecord) (err error)
+	FetchAllForTransactionID(transactionID TransactionID) (records []EnrichedRecord, err error)
 }
 
 /////////////////////////

@@ -35,3 +35,12 @@ func (id *TransactionID) UnmarshalBSONValue(_ bsontype.Type, raw []byte) error {
 func NewTransactionID() TransactionID {
 	return TransactionID(uuid.New())
 }
+
+// NewTransactionIDFromString parses a string into a transaction id
+func NewTransactionIDFromString(id string) (transactionID TransactionID, err error) {
+	uID, err := uuid.Parse(id)
+	if err != nil {
+		return transactionID, err
+	}
+	return TransactionID(uID), err
+}

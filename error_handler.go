@@ -11,8 +11,8 @@ type SentryErrorHandler struct {
 }
 
 // NewSentryErrorHandler creates a new instance fo an error handler which sends errors to sentry
-func NewSentryErrorHandler() SentryErrorHandler {
-	return SentryErrorHandler{}
+func NewSentryErrorHandler() *SentryErrorHandler {
+	return &SentryErrorHandler{}
 }
 
 // HandleSoftError is responsible for handling non fatal errors

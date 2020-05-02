@@ -36,8 +36,8 @@ func (repository *MongoNSEnrichedRecordsRepository) Store(records []EnrichedReco
 	return nil
 }
 
-// GetByTransactionID returns []EnrichedRecord based on on the transaction id
-func (repository *MongoNSEnrichedRecordsRepository) GetByTransactionID(id TransactionID) (enrichedRecords []EnrichedRecord, err error) {
+// FetchAllForTransactionID returns []EnrichedRecord based on on the transaction id
+func (repository *MongoNSEnrichedRecordsRepository) FetchAllForTransactionID(id TransactionID) (enrichedRecords []EnrichedRecord, err error) {
 	ctx, _ := context.WithTimeout(context.Background(), dbOperationTimeout)
 	cursor, err := repository.db.Collection(repository.collection).Find(ctx, bson.M{"transaction_id": id.String()})
 	if err != nil {

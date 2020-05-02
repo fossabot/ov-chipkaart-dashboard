@@ -2,15 +2,22 @@ package main
 
 import "github.com/pkg/errors"
 
+const (
+	supplementPriceOffPeak = 156
+	supplementPricePeak    = 262
+)
+
 // NSNoDiscountCalculator calculates the price of a journey when there are no discounts.
 type NSNoDiscountCalculator struct {
-	priceFetcher NSPriceFetcherService
+	priceFetcher   NSPriceFetcherService
+	offPeakService NSOffPeakService
 }
 
 // NewNSNoDiscountCalculator creates a new instance of an NSNoDiscountCalculator
-func NewNSNoDiscountCalculator(priceFetcher NSPriceFetcherService) *NSNoDiscountCalculator {
+func NewNSNoDiscountCalculator(priceFetcher NSPriceFetcherService, offPeakService NSOffPeakService) *NSNoDiscountCalculator {
 	return &NSNoDiscountCalculator{
-		priceFetcher: priceFetcher,
+		priceFetcher:   priceFetcher,
+		offPeakService: offPeakService,
 	}
 }
 
@@ -32,8 +39,13 @@ func (result *NSNoDiscountCalculatorResult) AddJourneyPrice(journey NSJourneyPri
 }
 
 // IncrementSupplement increments tne result by adding a supplement
-func (result *NSNoDiscountCalculatorResult) IncrementSupplement() {
+func (result *NSNoDiscountCalculatorResult) IncrementSupplement(isOffPeak bool) {
 	result.SupplementCount++
+	if isOffPeak {
+		result.SupplementPrice += supplementPriceOffPeak
+	} else {
+		result.SupplementPrice += supplementPricePeak
+	}
 }
 
 // Calculate calculates the total price
@@ -41,6 +53,7 @@ func (calculator NSNoDiscountCalculator) Calculate(records []EnrichedRecord) (re
 	var (
 		errorRecords []ErrorEnrichedRecord
 	)
+
 	for _, record := range records {
 		if record.IsNSJourney() {
 			journeyPrice, err := calculator.priceFetcher.FetchPrice(record.NSJourney())
@@ -53,9 +66,8 @@ func (calculator NSNoDiscountCalculator) Calculate(records []EnrichedRecord) (re
 
 			result.AddJourneyPrice(journeyPrice)
 		} else if record.IsSupplement() {
-			result.IncrementSupplement()
+			result.IncrementSupplement(calculator.offPeakService.IsOffPeak(record.StartTime.ToTime()))
 		}
-
 	}
 
 	return result
