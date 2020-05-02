@@ -42,14 +42,14 @@ func main() {
 
 	mongodb := client.Database(os.Getenv("MONGODB_DB_NAME"))
 	//loadNsStations(mongodb)
-	//storeNSTransactions(mongodb)
+	storeNSTransactions(mongodb)
 	//storeNationalHolidays(mongodb)
 
 	//
 	bsonService := NewBsonService()
 	errorHandler := NewSentryErrorHandler()
 	//rawRecordsRepository := InitializeRawRecordsRepository(collectionRawRecords, mongodb)
-	//
+
 	//enrichedRecordsRepository := NewMongoNSEnrichedRecordsRepository(mongodb, collectionNSEnrichedRecords, bsonService)
 	cache, err := lfucache.New(100)
 	nsClient := NewNSAPIClient(&http.Client{}, os.Getenv("NS_API_KEY_PUBLIC_TRAVEL_INFORMATION"))
@@ -191,6 +191,7 @@ func storeNSTransactions(mongodb *mongo.Database) {
 		records[index].TransactionID = &transactionID
 		records[index].Source = &source
 		records[index].ID = &recordID
+		println(records[index].TransactionName)
 	}
 
 	log.Println(len(records))

@@ -127,6 +127,7 @@ func (service TransactionFetcherAPIService) getTransactions(authorisationToken a
 	payload.EndDate = transactionsResponse.Response.NextRequestContext.EndDate
 
 	requestLimit := len(records)
+
 	numberOfRequests := int(math.Ceil(float64(transactionsResponse.Response.TotalSize) / float64(requestLimit)))
 
 	rateLimiter := ratelimit.New(transactionRequestsPerSecond)
