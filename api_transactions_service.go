@@ -21,7 +21,7 @@ const contentTypeFormURLEncoded = "application/x-www-form-urlencoded"
 
 const responseCodeOk = 200
 
-const transactionRequestsPerSecond = 5
+const transactionRequestsPerSecond = 10
 
 type authenticationTokenResponse struct {
 	IDToken          string `json:"id_token"`
@@ -136,12 +136,12 @@ func (service TransactionFetcherAPIService) getTransactions(authorisationToken a
 
 		rateLimiter.Take()
 
-		transactions, err := service.getTransaction(payload)
+		transactionsResponse, err = service.getTransaction(payload)
 		if err != nil {
 			return nil, errors.Wrapf(err, "cannot perform transactions request: payload = %+v", payload)
 		}
 
-		records = append(records, transactions.Response.Records...)
+		records = append(records, transactionsResponse.Response.Records...)
 	}
 
 	return records, nil

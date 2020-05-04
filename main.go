@@ -42,69 +42,74 @@ func main() {
 
 	mongodb := client.Database(os.Getenv("MONGODB_DB_NAME"))
 	//loadNsStations(mongodb)
-	storeNSTransactions(mongodb)
+
+	/*err = mongodb.Collection(collectionRawRecords).Drop(context.Background())
+	if err != nil {
+		log.Fatalf(err.Error())
+	}*/
+
+	err = mongodb.Collection(collectionNSEnrichedRecords).Drop(context.Background())
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	//storeNSTransactions(mongodb)
 	//storeNationalHolidays(mongodb)
 
 	//
 	bsonService := NewBsonService()
 	errorHandler := NewSentryErrorHandler()
-	//rawRecordsRepository := InitializeRawRecordsRepository(collectionRawRecords, mongodb)
+	rawRecordsRepository := InitializeRawRecordsRepository(collectionRawRecords, mongodb)
 
-	//enrichedRecordsRepository := NewMongoNSEnrichedRecordsRepository(mongodb, collectionNSEnrichedRecords, bsonService)
+	enrichedRecordsRepository := NewMongoNSEnrichedRecordsRepository(mongodb, collectionNSEnrichedRecords, bsonService)
 	cache, err := lfucache.New(100)
 	nsClient := NewNSAPIClient(&http.Client{}, os.Getenv("NS_API_KEY_PUBLIC_TRAVEL_INFORMATION"))
 	pricesRepository := NewMongoNSPricesRepository(mongodb, collectionNSPrices, bsonService)
-	//stationsRepository := NewMongoNSStationsRepository(mongodb, collectionNSStations, bsonService)
+	stationsRepository := NewMongoNSStationsRepository(mongodb, collectionNSStations, bsonService)
 	priceFetcher := NewNSPriceFetcher(nsClient, pricesRepository, errorHandler, cache)
-	//stationCodeService := NewNSStationsCodeService(stationsRepository, errorHandler, cache)
-	//enrichmentService := NewNSRawRecordsEnrichmentService(stationCodeService, priceFetcher)
+	stationCodeService := NewNSStationsCodeService(stationsRepository, errorHandler, cache)
+	enrichmentService := NewNSRawRecordsEnrichmentService(stationCodeService, priceFetcher)
 	//
-	//log.Println("Fetching first transaction")
-	//id, err := rawRecordsRepository.First()
-	//if err != nil {
-	//	errorHandler.HandleHardError(err)
-	//}
-	//log.Println("Finished fetching first transaction")
+	log.Println("Fetching first transaction")
+	id, err := rawRecordsRepository.First()
+	if err != nil {
+		errorHandler.HandleHardError(err)
+	}
+	log.Println("Finished fetching first transaction")
+
+	globalTransactionID := *id.TransactionID
+	getOptions := GetRawRecordsOptions{
+		TransactionID: globalTransactionID,
+		SortBy:        "transaction_timestamp",
+		SortDirection: "ASC",
+	}
+
+	log.Println("fetching raw records from DB")
+	rawRecords, err := rawRecordsRepository.GetByTransactionID(getOptions)
+	if err != nil {
+		errorHandler.HandleHardError(err)
+	}
 	//
-	//globalTransactionID := *id.TransactionID
-	//getOptions := GetRawRecordsOptions{
-	//	TransactionID: globalTransactionID,
-	//	SortBy:        "transaction_timestamp",
-	//	SortDirection: "ASC",
-	//}
-	//
-	//log.Println("fetching raw records from DB")
-	//rawRecords, err := rawRecordsRepository.GetByTransactionID(getOptions)
-	//if err != nil {
-	//	errorHandler.HandleHardError(err)
-	//}
-	//
-	//log.Printf("%d raw records fetched\n", len(rawRecords))
-	//
-	//log.Println("Fetching enriched records")
-	//enrichmentResult := enrichmentService.Enrich(rawRecords)
-	//log.Println("Finished enriching records")
-	//
-	//log.Printf("%d enriched records and %d failed records\n", len(enrichmentResult.ValidRecords), len(enrichmentResult.Error.ErrorRecords))
-	//
-	//log.Println("Starting storing of enriched records")
-	//err = enrichedRecordsRepository.Store(enrichmentResult.ValidRecords)
-	//if err != nil {
-	//	errorHandler.HandleHardError(err)
-	//}
-	//log.Println("Finished storing of enriched records")
+	log.Printf("%d raw records fetched\n", len(rawRecords))
+
+	log.Println("Fetching enriched records")
+	enrichmentResult := enrichmentService.Enrich(rawRecords)
+	log.Println("Finished enriching records")
+
+	log.Printf("%d enriched records and %d failed records\n", len(enrichmentResult.ValidRecords), len(enrichmentResult.Error.ErrorRecords))
+
+	log.Println("Starting storing of enriched records")
+	err = enrichedRecordsRepository.Store(enrichmentResult.ValidRecords)
+	if err != nil {
+		errorHandler.HandleHardError(err)
+	}
+	log.Println("Finished storing of enriched records")
 
 	nationalHolidayRepository := InitializeNationalHolidaysRepository(collectionNationalHolidays, mongodb)
 	offPeakService := NewNSOffPeakService(nationalHolidayRepository, InitializeCache(100), NewSentryErrorHandler())
 	noDiscountCalculatorService := NewNSNoDiscountCalculator(priceFetcher, offPeakService)
-	enrichedRecordsRepository := InitializeEnrichedRecordsRepository(collectionNSEnrichedRecords, mongodb)
 
-	id, err := NewTransactionIDFromString("0156e58c-2746-4f95-88b5-e420d2babba4")
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-
-	enrichedRecords, err := enrichedRecordsRepository.FetchAllForTransactionID(id)
+	enrichedRecords, err := enrichedRecordsRepository.FetchAllForTransactionID(globalTransactionID)
 	if err != nil {
 		log.Fatalf(err.Error())
 	}

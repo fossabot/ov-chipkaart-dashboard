@@ -1,6 +1,10 @@
 package main
 
-import "github.com/pkg/errors"
+import (
+	"time"
+
+	"github.com/pkg/errors"
+)
 
 const (
 	supplementPriceOffPeak = 156
@@ -66,6 +70,7 @@ func (calculator NSNoDiscountCalculator) Calculate(records []EnrichedRecord) (re
 
 			result.AddJourneyPrice(journeyPrice)
 		} else if record.IsSupplement() {
+			println(record.StartTime.ToTime().Format(time.RFC850))
 			result.IncrementSupplement(calculator.offPeakService.IsOffPeak(record.StartTime.ToTime()))
 		}
 	}

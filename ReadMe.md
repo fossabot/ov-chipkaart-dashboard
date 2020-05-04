@@ -11,6 +11,8 @@
 - [X] Create NS transactions filter
 - [X] Create enrichment step for NS transactions
 - [X] Create ability to store Enriched NS transactions
+- [X] Fix bug when importing raw_records
+- [X] Fix bug with suplement/off-peak calculation
 - [ ] Create ability to process NS transactions without discount
 - [ ] Create ability to process NS transactions (Dal Voordeel)
 - [ ] Create ability to process NS transactions with 20% discount with weekends (Altijd voordeel)
