@@ -118,6 +118,10 @@ func main() {
 	result := noDiscountCalculatorService.Calculate(enrichedRecords)
 	spew.Dump(result)
 
+	darVoordeelCalculator := NewNSDalVoordeelCalculator(priceFetcher, offPeakService)
+	dalVoordeel := darVoordeelCalculator.Calculate(enrichedRecords)
+	spew.Dump(dalVoordeel)
+
 	xulu.Use(enrichmentService)
 }
 
