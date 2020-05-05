@@ -14,7 +14,7 @@
 - [X] Fix bug when importing raw_records
 - [X] Fix bug with suplement/off-peak calculation
 - [X] Create ability to process NS transactions without discount
-- [ ] Create ability to process NS transactions (Dal Voordeel)
+- [X] Create ability to process NS transactions (Dal Voordeel)
 - [ ] Create ability to process NS transactions with 20% discount with weekends (Altijd voordeel)
 - [ ] Create ability to filter all off peak NS transactions (Dal Vrij)
 
