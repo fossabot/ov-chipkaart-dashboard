@@ -29,7 +29,7 @@ func (service NSOffPeakService) IsOffPeak(timestamp time.Time) bool {
 
 	// check if timestamp is in cache
 	val, err := service.getFromCache(date)
-	if err != nil {
+	if err == nil {
 		return val
 	}
 

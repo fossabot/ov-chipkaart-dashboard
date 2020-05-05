@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/pkg/errors"
 )
 
@@ -31,8 +29,6 @@ func NewNSPriceFetcher(
 
 // FetchPrice returns the NSJourneyPrice for an NSJourney
 func (priceFetcher *NSPriceFetcherService) FetchPrice(nsJourney NSJourney) (price NSJourneyPrice, err error) {
-	log.Println("Fetching price for ", nsJourney.ToStationCode, " to ", nsJourney.FromStationCode)
-	log.Println("Hash = ", nsJourney.NSPriceHash())
 	// Fetch price in Cache
 	val, err := priceFetcher.cache.Get(nsJourney.NSPriceHash())
 	if err == nil {
@@ -53,12 +49,10 @@ func (priceFetcher *NSPriceFetcherService) FetchPrice(nsJourney NSJourney) (pric
 	}
 
 	// Fetch Price using the API
-	log.Println("fetching price using API")
 	journeyPrice, err := priceFetcher.apiClient.FetchJourneyPrice(nsJourney)
 	if err != nil {
 		return price, errors.Wrap(err, "cannot fetch price using API")
 	}
-	log.Printf("Finished fetching price using API")
 
 	// Store the newly fetched price
 	err = priceFetcher.pricesRepository.Store(journeyPrice)
@@ -68,8 +62,6 @@ func (priceFetcher *NSPriceFetcherService) FetchPrice(nsJourney NSJourney) (pric
 		priceFetcher.errorHandler.HandleSoftError(errors.Wrap(err, "cannot store price in mongodb"))
 		return price, nil
 	}
-
-	log.Println("price stored in mongodb")
 
 	return price, err
 }

@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/labstack/gommon/log"
 )
 
 // DBTimestamp stores the timestamp when persisting objects in the DB
@@ -189,12 +187,10 @@ func (journey NSJourney) ToMap() map[string]string {
 	if journey.date.Year() < time.Now().Year() {
 		parsed, err := time.Parse(dateFormat, strconv.Itoa(time.Now().Year()-1)+"-12-30")
 		if err == nil {
-			log.Printf("cannot parse %f as date", strconv.Itoa(time.Now().Year()-1)+"-12-30")
 			date = parsed.Format(dateFormat)
 		}
 	}
 
-	log.Printf("date =  %s\n", date)
 	return map[string]string{
 		"date":        date,
 		"toStation":   journey.FromStationCode,

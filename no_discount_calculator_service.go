@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/pkg/errors"
 )
 
@@ -27,29 +25,43 @@ func NewNSNoDiscountCalculator(priceFetcher NSPriceFetcherService, offPeakServic
 
 //NSNoDiscountCalculatorResult represents the calculation result of an NS Journey
 type NSNoDiscountCalculatorResult struct {
-	FirstClassPrice  int
-	SecondClassPrice int
-	SupplementPrice  int
-	SupplementCount  int
-	JourneyCount     int
-	Error            EnrichedRecordsError
+	FirstClassPrice        int
+	SecondClassPrice       int
+	PeakSupplementPrice    int
+	PeakSupplementCount    int
+	OffPeakSupplementPrice int
+	OffPeakSupplementCount int
+	JourneyCount           int
+	Error                  EnrichedRecordsError
 }
 
-// AddJourneyPrice adds the price of an NSJourney to the result
-func (result *NSNoDiscountCalculatorResult) AddJourneyPrice(journey NSJourneyPrice) {
+// addJourneyPrice adds the price of an NSJourney to the result
+func (result *NSNoDiscountCalculatorResult) addJourneyPrice(journey NSJourneyPrice) {
 	result.FirstClassPrice += journey.FirstClassSingleFarePrice
 	result.SecondClassPrice += journey.SecondClassSingleFarePrice
 	result.JourneyCount++
 }
 
-// IncrementSupplement increments tne result by adding a supplement
-func (result *NSNoDiscountCalculatorResult) IncrementSupplement(isOffPeak bool) {
-	result.SupplementCount++
-	if isOffPeak {
-		result.SupplementPrice += supplementPriceOffPeak
-	} else {
-		result.SupplementPrice += supplementPricePeak
-	}
+// incrementPeakSupplement adds the peak supplement price
+func (result *NSNoDiscountCalculatorResult) incrementPeakSupplement() {
+	result.PeakSupplementCount++
+	result.PeakSupplementPrice += supplementPricePeak
+}
+
+// incrementOffPeakSupplement adds the off peak supplement price
+func (result *NSNoDiscountCalculatorResult) incrementOffPeakSupplement() {
+	result.OffPeakSupplementCount++
+	result.OffPeakSupplementPrice += supplementPriceOffPeak
+}
+
+// SupplementPrice returns the price of both off peak and peak supplement
+func (result NSNoDiscountCalculatorResult) SupplementPrice() int {
+	return result.OffPeakSupplementPrice + result.PeakSupplementPrice
+}
+
+// SupplementCount returns the total count of all supplements.
+func (result NSNoDiscountCalculatorResult) SupplementCount() int {
+	return result.OffPeakSupplementCount + result.PeakSupplementCount
 }
 
 // Calculate calculates the total price
@@ -66,12 +78,16 @@ func (calculator NSNoDiscountCalculator) Calculate(records []EnrichedRecord) (re
 					Record: record,
 					Error:  errors.Wrapf(err, "cannot fetch price for record"),
 				})
+			} else {
+				result.addJourneyPrice(journeyPrice)
 			}
-
-			result.AddJourneyPrice(journeyPrice)
 		} else if record.IsSupplement() {
-			println(record.StartTime.ToTime().Format(time.RFC850))
-			result.IncrementSupplement(calculator.offPeakService.IsOffPeak(record.StartTime.ToTime()))
+			isOffPeak := calculator.offPeakService.IsOffPeak(record.StartTime.ToTime())
+			if isOffPeak {
+				result.incrementOffPeakSupplement()
+			} else {
+				result.incrementPeakSupplement()
+			}
 		}
 	}
 
