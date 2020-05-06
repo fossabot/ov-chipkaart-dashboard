@@ -122,6 +122,16 @@ func main() {
 	dalVoordeel := darVoordeelCalculator.Calculate(enrichedRecords)
 	spew.Dump(dalVoordeel)
 
+	altijdVoordeelCalculator := NewNSAltijdVoordeelCalculator(priceFetcher, offPeakService)
+	altijdVoordeel := altijdVoordeelCalculator.Calculate(enrichedRecords)
+
+	spew.Dump(altijdVoordeel)
+
+	dalVrijCalculator := NewNSDalVrijCalculator(priceFetcher, offPeakService)
+	dalVrij := dalVrijCalculator.Calculate(enrichedRecords)
+
+	spew.Dump(dalVrij)
+
 	xulu.Use(enrichmentService)
 }
 

@@ -4,27 +4,22 @@ import (
 	"github.com/pkg/errors"
 )
 
-const (
-	offPeakPriceDiscount = float64(0.6)
-	peakPriceDiscount    = float64(0.80)
-)
-
-// NSDalVoordeelCalculator calculates the price of journeys with the DalVoordeel discount
-type NSDalVoordeelCalculator struct {
+// NSAltijdVoordeelCalculator calculates the price of journeys with the AltijdVoordeel discount
+type NSAltijdVoordeelCalculator struct {
 	priceFetcher   NSPriceFetcherService
 	offPeakService NSOffPeakService
 }
 
-// NewNSDalVoordeelCalculator creates a new instance of an NSDalVoordeelCalculator
-func NewNSDalVoordeelCalculator(priceFetcher NSPriceFetcherService, offPeakService NSOffPeakService) *NSDalVoordeelCalculator {
-	return &NSDalVoordeelCalculator{
+// NewNSAltijdVoordeelCalculator creates a new instance of an NSAltijdVoordeelCalculator
+func NewNSAltijdVoordeelCalculator(priceFetcher NSPriceFetcherService, offPeakService NSOffPeakService) *NSAltijdVoordeelCalculator {
+	return &NSAltijdVoordeelCalculator{
 		priceFetcher:   priceFetcher,
 		offPeakService: offPeakService,
 	}
 }
 
-//NSDalVoordeelCalculatorResult represents the calculation result of an NS Journey
-type NSDalVoordeelCalculatorResult struct {
+//NSAltijdVoordeelCalculatorResult represents the calculation result of an NS Journey
+type NSAltijdVoordeelCalculatorResult struct {
 	OffPeakFirstClassPrice  Money
 	OffPeakSecondClassPrice Money
 	OffPeakJourneyCount     int
@@ -38,7 +33,7 @@ type NSDalVoordeelCalculatorResult struct {
 	Error                   EnrichedRecordsError
 }
 
-func (result *NSDalVoordeelCalculatorResult) init() {
+func (result *NSAltijdVoordeelCalculatorResult) init() {
 	result.OffPeakSecondClassPrice = NewEUR(0)
 	result.OffPeakFirstClassPrice = NewEUR(0)
 	result.PeakFirstClassPrice = NewEUR(0)
@@ -48,43 +43,43 @@ func (result *NSDalVoordeelCalculatorResult) init() {
 }
 
 // addOffPeakJourneyPrice adds the price of an NSJourney when not in peak period
-func (result *NSDalVoordeelCalculatorResult) addOffPeakJourneyPrice(journey NSJourneyPrice) {
+func (result *NSAltijdVoordeelCalculatorResult) addOffPeakJourneyPrice(journey NSJourneyPrice) {
 	result.OffPeakFirstClassPrice = result.OffPeakFirstClassPrice.AddAmount(NewEUR(journey.FirstClassSingleFarePrice).Multiply(offPeakPriceDiscount).Value())
 	result.OffPeakSecondClassPrice = result.OffPeakSecondClassPrice.AddAmount(NewEUR(journey.SecondClassSingleFarePrice).Multiply(offPeakPriceDiscount).Value())
 	result.OffPeakJourneyCount++
 }
 
 // addPeakJourneyPrice adds the price of an NS Journey during the peak period
-func (result *NSDalVoordeelCalculatorResult) addPeakJourneyPrice(journey NSJourneyPrice) {
-	result.PeakFirstClassPrice = result.PeakFirstClassPrice.AddAmount(NewEUR(journey.FirstClassSingleFarePrice).Value())
-	result.PeakSecondClassPrice = result.PeakSecondClassPrice.AddAmount(NewEUR(journey.SecondClassSingleFarePrice).Value())
+func (result *NSAltijdVoordeelCalculatorResult) addPeakJourneyPrice(journey NSJourneyPrice) {
+	result.PeakFirstClassPrice = result.PeakFirstClassPrice.AddAmount(NewEUR(journey.FirstClassSingleFarePrice).Multiply(peakPriceDiscount).Value())
+	result.PeakSecondClassPrice = result.PeakSecondClassPrice.AddAmount(NewEUR(journey.SecondClassSingleFarePrice).Multiply(peakPriceDiscount).Value())
 	result.PeakJourneyCount++
 }
 
 // incrementPeakSupplement adds the peak supplement price
-func (result *NSDalVoordeelCalculatorResult) incrementPeakSupplement() {
+func (result *NSAltijdVoordeelCalculatorResult) incrementPeakSupplement() {
 	result.PeakSupplementCount++
 	result.PeakSupplementPrice = result.PeakSupplementPrice.AddAmount(supplementPricePeak)
 }
 
 // incrementOffPeakSupplement adds the off peak supplement price
-func (result *NSDalVoordeelCalculatorResult) incrementOffPeakSupplement() {
+func (result *NSAltijdVoordeelCalculatorResult) incrementOffPeakSupplement() {
 	result.OffPeakSupplementCount++
 	result.OffPeakSupplementPrice = result.OffPeakSupplementPrice.AddAmount(supplementPriceOffPeak)
 }
 
 // SupplementPrice returns the price of both off peak and peak supplement
-func (result NSDalVoordeelCalculatorResult) SupplementPrice() Money {
+func (result NSAltijdVoordeelCalculatorResult) SupplementPrice() Money {
 	return result.OffPeakSupplementPrice.AddAmount(result.PeakSupplementPrice.Value())
 }
 
 // SupplementCount returns the total count of all supplements.
-func (result NSDalVoordeelCalculatorResult) SupplementCount() int {
+func (result NSAltijdVoordeelCalculatorResult) SupplementCount() int {
 	return result.OffPeakSupplementCount + result.PeakSupplementCount
 }
 
 // Calculate calculates the total price
-func (calculator NSDalVoordeelCalculator) Calculate(records []EnrichedRecord) (result NSDalVoordeelCalculatorResult) {
+func (calculator NSAltijdVoordeelCalculator) Calculate(records []EnrichedRecord) (result NSAltijdVoordeelCalculatorResult) {
 	var (
 		errorRecords []ErrorEnrichedRecord
 	)
