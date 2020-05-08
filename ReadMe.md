@@ -29,6 +29,7 @@
 - [ ] Use a message broker for faster services
 
 ### V2
+
 - [ ] Create ability to process RET transactions
 - [ ] Create ability to process 20% 19 Euro transactions
 - [ ] Create ability to process RET & non RET transactions

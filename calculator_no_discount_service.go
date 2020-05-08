@@ -25,38 +25,55 @@ func NewNSNoDiscountCalculator(priceFetcher NSPriceFetcherService, offPeakServic
 
 //NSNoDiscountCalculatorResult represents the calculation result of an NS Journey
 type NSNoDiscountCalculatorResult struct {
-	FirstClassPrice        int
-	SecondClassPrice       int
-	PeakSupplementPrice    int
-	PeakSupplementCount    int
-	OffPeakSupplementPrice int
-	OffPeakSupplementCount int
-	JourneyCount           int
-	Error                  EnrichedRecordsError
+	OffPeakFirstClassPrice  Money
+	OffPeakSecondClassPrice Money
+	OffPeakJourneyCount     int
+	PeakFirstClassPrice     Money
+	PeakSecondClassPrice    Money
+	PeakJourneyCount        int
+	PeakSupplementPrice     Money
+	PeakSupplementCount     int
+	OffPeakSupplementPrice  Money
+	OffPeakSupplementCount  int
+	Error                   EnrichedRecordsError
 }
 
-// addJourneyPrice adds the price of an NSJourney to the result
-func (result *NSNoDiscountCalculatorResult) addJourneyPrice(journey NSJourneyPrice) {
-	result.FirstClassPrice += journey.FirstClassSingleFarePrice
-	result.SecondClassPrice += journey.SecondClassSingleFarePrice
-	result.JourneyCount++
+func (result *NSNoDiscountCalculatorResult) init() {
+	result.OffPeakSecondClassPrice = NewEUR(0)
+	result.OffPeakFirstClassPrice = NewEUR(0)
+	result.PeakFirstClassPrice = NewEUR(0)
+	result.PeakSecondClassPrice = NewEUR(0)
+	result.PeakSupplementPrice = NewEUR(0)
+	result.OffPeakSupplementPrice = NewEUR(0)
+}
+
+// addOffPeakJourneyPrice adds the price of an NSJourney when not in peak period
+func (result *NSNoDiscountCalculatorResult) addOffPeakJourneyPrice(journey NSJourneyPrice) {
+	result.OffPeakJourneyCount++
+}
+
+// addPeakJourneyPrice adds the price of an NS Journey during the peak period
+func (result *NSNoDiscountCalculatorResult) addPeakJourneyPrice(journey NSJourneyPrice) {
+	result.PeakFirstClassPrice = result.PeakFirstClassPrice.AddAmount(NewEUR(journey.FirstClassSingleFarePrice).Value())
+	result.PeakSecondClassPrice = result.PeakSecondClassPrice.AddAmount(NewEUR(journey.SecondClassSingleFarePrice).Value())
+	result.PeakJourneyCount++
 }
 
 // incrementPeakSupplement adds the peak supplement price
 func (result *NSNoDiscountCalculatorResult) incrementPeakSupplement() {
 	result.PeakSupplementCount++
-	result.PeakSupplementPrice += supplementPricePeak
+	result.PeakSupplementPrice = result.PeakSupplementPrice.AddAmount(supplementPricePeak)
 }
 
 // incrementOffPeakSupplement adds the off peak supplement price
 func (result *NSNoDiscountCalculatorResult) incrementOffPeakSupplement() {
 	result.OffPeakSupplementCount++
-	result.OffPeakSupplementPrice += supplementPriceOffPeak
+	result.OffPeakSupplementPrice = result.OffPeakSupplementPrice.AddAmount(supplementPriceOffPeak)
 }
 
 // SupplementPrice returns the price of both off peak and peak supplement
-func (result NSNoDiscountCalculatorResult) SupplementPrice() int {
-	return result.OffPeakSupplementPrice + result.PeakSupplementPrice
+func (result NSNoDiscountCalculatorResult) SupplementPrice() Money {
+	return result.OffPeakSupplementPrice.AddAmount(result.PeakSupplementPrice.Value())
 }
 
 // SupplementCount returns the total count of all supplements.
@@ -71,6 +88,7 @@ func (calculator NSNoDiscountCalculator) Calculate(records []EnrichedRecord) (re
 	)
 
 	for _, record := range records {
+		isOffPeak := calculator.offPeakService.IsOffPeak(record.StartTime.ToTime())
 		if record.IsNSJourney() {
 			journeyPrice, err := calculator.priceFetcher.FetchPrice(record.NSJourney())
 			if err != nil {
@@ -79,10 +97,13 @@ func (calculator NSNoDiscountCalculator) Calculate(records []EnrichedRecord) (re
 					Error:  errors.Wrapf(err, "cannot fetch price for record"),
 				})
 			} else {
-				result.addJourneyPrice(journeyPrice)
+				if isOffPeak {
+					result.addOffPeakJourneyPrice(journeyPrice)
+				} else {
+					result.addPeakJourneyPrice(journeyPrice)
+				}
 			}
 		} else if record.IsSupplement() {
-			isOffPeak := calculator.offPeakService.IsOffPeak(record.StartTime.ToTime())
 			if isOffPeak {
 				result.incrementOffPeakSupplement()
 			} else {
