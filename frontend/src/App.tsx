@@ -11,7 +11,7 @@ function App() {
         <p>
           Edit <code>src/App.tsx</code> and save to reload.
         </p>
-        <Button color="primary">Hello World</Button>
+        <Button variant="contained">Default</Button>
         <a
           className="App-link"
           href="https://reactjs.org"
