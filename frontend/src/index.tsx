@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as serviceWorker from './serviceWorker';
-import 'normalize.css';
-import 'tailwindcss/dist/tailwind.css';
+import 'minireset.css';
 import { Route, Switch, BrowserRouter as Router } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import './i18n';

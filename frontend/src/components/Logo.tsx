@@ -1,6 +1,6 @@
-import React from 'react'
-import Box from '@material-ui/core/Box'
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles'
+import React from 'react';
+import Box from '@material-ui/core/Box';
+import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -23,15 +23,15 @@ const useStyles = makeStyles((theme: Theme) =>
                 marginTop: -5,
             },
         },
-    })
-)
+    }),
+);
 
-export default function Logo({}) {
-    const classes = useStyles()
+export default function Logo() {
+    const classes = useStyles();
     return (
         <Box className={classes.container}>
             <span className={classes.suffix}>ov-chipkaart</span>
             dashboard
         </Box>
-    )
+    );
 }

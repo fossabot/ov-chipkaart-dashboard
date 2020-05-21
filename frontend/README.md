@@ -1,4 +1,6 @@
 ## TODO
 
 - [ ] Create landing page (https://www.dropbox.com) inspriratie
-- [ ] Create Sign in/sign up form
+- [X] Create Sign Up form
+- [ ] Create the Sign in Form
+- [ ] Add Redux to the project
