@@ -15,10 +15,8 @@ import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import GoogleInvisibleCaptcha from '../../components/GoogleInvisibleCaptcha';
-import verticalImage from '../../images/vertical.svg';
 import useTheme from '@material-ui/core/styles/useTheme';
 
-console.log(verticalImage);
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         container: {
