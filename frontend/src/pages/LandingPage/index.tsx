@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, MouseEvent, ChangeEvent } from 'react';
 import './index.scss';
 import Grid from '@material-ui/core/Grid';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
@@ -12,6 +12,8 @@ import TransKeys from '../../i18n/keys';
 import Button from '@material-ui/core/Button';
 import Anchor from '@material-ui/core/Link';
 import TextField from '@material-ui/core/TextField';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -70,6 +72,11 @@ export default function LandingPage() {
     const classes = useStyles();
     const { t } = useTranslation();
 
+    const [state, setState] = useState({
+        signUpActive: false,
+        rememberMeActive: true,
+    });
+
     return (
         <Grid container className={classes.container}>
             <Grid item xs={8}>
@@ -110,93 +117,216 @@ export default function LandingPage() {
             <Grid item xs={4}>
                 <Box width="100%" maxWidth={400}>
                     <Box p={3} display="flex" justifyContent="flex-end">
-                        <Button variant="outlined" color="primary">
-                            Sign in
+                        <Button
+                            variant="outlined"
+                            onClick={() => {
+                                setState({
+                                    ...state,
+                                    signUpActive: !state.signUpActive,
+                                });
+                            }}
+                            color="primary"
+                        >
+                            {state.signUpActive ? t('Sign In') : t('Sign Up')}
                         </Button>
                     </Box>
                     <Box className={classes.auth}>
-                        <Box width="100%">
-                            <Typography variant="h5">
-                                {t(TransKeys.LANDING_PAGE.SIGN_UP)}
-                            </Typography>
-                            <Typography variant="body2">
-                                or{' '}
-                                <Anchor href="#">
-                                    sign in to your account
-                                </Anchor>
-                            </Typography>
-                            <form>
-                                <Box
-                                    mt={2}
-                                    width="100%"
-                                    className={classes.form}
-                                >
-                                    <TextField
-                                        required
-                                        fullWidth
-                                        size="small"
-                                        label="First Name"
-                                        variant="outlined"
-                                        autoComplete="given-name"
-                                    />
-                                    <TextField
-                                        required
-                                        fullWidth
-                                        size="small"
-                                        label="Surname"
-                                        variant="outlined"
-                                        autoComplete="family-name"
-                                    />
-                                    <TextField
-                                        required
-                                        fullWidth
-                                        size="small"
-                                        label="Email"
-                                        autoComplete="email"
-                                        variant="outlined"
-                                    />
-                                    <TextField
-                                        required
-                                        fullWidth
-                                        size="small"
-                                        label="Password"
-                                        type="password"
-                                        autoComplete="password"
-                                        variant="outlined"
-                                    />
-
-                                    <Typography
-                                        variant="body2"
-                                        className={classes.privacyPolicy}
+                        {state.signUpActive ? (
+                            <Box width="100%">
+                                <Typography variant="h5">
+                                    {t('Sign Up')}
+                                </Typography>
+                                <Typography variant="body2">
+                                    {t('or')}{' '}
+                                    <Anchor
+                                        href="#"
+                                        onClick={(event: MouseEvent) => {
+                                            event.preventDefault();
+                                            setState({
+                                                ...state,
+                                                signUpActive: false,
+                                            });
+                                        }}
                                     >
-                                        This page is protected by reCAPTCHA and
-                                        is subject to the Google{' '}
-                                        <Anchor
-                                            target="_blank"
-                                            href="https://policies.google.com/privacy"
-                                        >
-                                            Privacy Policy
-                                        </Anchor>{' '}
-                                        and{' '}
-                                        <Anchor
-                                            target="_blank"
-                                            href="https://policies.google.com/terms"
-                                        >
-                                            Terms of Service
-                                        </Anchor>
-                                        .
-                                    </Typography>
-
-                                    <Button
-                                        fullWidth
-                                        color="secondary"
-                                        variant="contained"
+                                        {t('sign in to your account')}
+                                    </Anchor>
+                                </Typography>
+                                <form>
+                                    <Box
+                                        mt={2}
+                                        width="100%"
+                                        className={classes.form}
                                     >
-                                        Sign Up
-                                    </Button>
-                                </Box>
-                            </form>
-                        </Box>
+                                        <TextField
+                                            required
+                                            fullWidth
+                                            size="small"
+                                            label={t('First Name')}
+                                            variant="outlined"
+                                            autoComplete="given-name"
+                                        />
+                                        <TextField
+                                            required
+                                            fullWidth
+                                            size="small"
+                                            label={t('Surname')}
+                                            variant="outlined"
+                                            autoComplete="family-name"
+                                        />
+                                        <TextField
+                                            required
+                                            fullWidth
+                                            size="small"
+                                            label={t('Email')}
+                                            autoComplete="email"
+                                            variant="outlined"
+                                        />
+                                        <TextField
+                                            required
+                                            fullWidth
+                                            size="small"
+                                            label={t('Password')}
+                                            type="password"
+                                            autoComplete="password"
+                                            variant="outlined"
+                                        />
+
+                                        <Typography
+                                            variant="body2"
+                                            className={classes.privacyPolicy}
+                                        >
+                                            {t(
+                                                'This page is protected by reCAPTCHA and is subject to the Google',
+                                            )}{' '}
+                                            <Anchor
+                                                target="_blank"
+                                                href="https://policies.google.com/privacy"
+                                            >
+                                                {t('Privacy Policy')}
+                                            </Anchor>{' '}
+                                            and{' '}
+                                            <Anchor
+                                                target="_blank"
+                                                href="https://policies.google.com/terms"
+                                            >
+                                                {t('Terms of Service')}
+                                            </Anchor>
+                                            .
+                                        </Typography>
+
+                                        <Button
+                                            fullWidth
+                                            color="secondary"
+                                            variant="contained"
+                                        >
+                                            {t('Sign Up')}
+                                        </Button>
+                                    </Box>
+                                </form>
+                            </Box>
+                        ) : (
+                            <Box width="100%">
+                                <Typography variant="h5">
+                                    {t('Sign In')}
+                                </Typography>
+                                <Typography variant="body2">
+                                    {t('or')}{' '}
+                                    <Anchor
+                                        href="#"
+                                        onClick={(event: MouseEvent) => {
+                                            event.preventDefault();
+                                            setState({
+                                                ...state,
+                                                signUpActive: true,
+                                            });
+                                        }}
+                                    >
+                                        {t('create an account')}
+                                    </Anchor>
+                                </Typography>
+                                <form>
+                                    <Box
+                                        mt={2}
+                                        width="100%"
+                                        className={classes.form}
+                                    >
+                                        <TextField
+                                            required
+                                            fullWidth
+                                            size="small"
+                                            label={t('Email')}
+                                            autoComplete="email"
+                                            variant="outlined"
+                                        />
+                                        <TextField
+                                            required
+                                            fullWidth
+                                            size="small"
+                                            label={t('Password')}
+                                            type="password"
+                                            autoComplete="password"
+                                            variant="outlined"
+                                        />
+
+                                        <Typography
+                                            variant="body2"
+                                            className={classes.privacyPolicy}
+                                        >
+                                            {t(
+                                                'This page is protected by reCAPTCHA and is subject to the Google',
+                                            )}{' '}
+                                            <Anchor
+                                                target="_blank"
+                                                href="https://policies.google.com/privacy"
+                                            >
+                                                {t('Privacy Policy')}
+                                            </Anchor>{' '}
+                                            and{' '}
+                                            <Anchor
+                                                target="_blank"
+                                                href="https://policies.google.com/terms"
+                                            >
+                                                {t('Terms of Service')}
+                                            </Anchor>
+                                            .
+                                        </Typography>
+
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={
+                                                        state.rememberMeActive
+                                                    }
+                                                    onChange={(
+                                                        event: ChangeEvent<
+                                                            HTMLInputElement
+                                                        >,
+                                                    ) => {
+                                                        setState({
+                                                            ...state,
+                                                            rememberMeActive:
+                                                                event.target
+                                                                    .checked,
+                                                        });
+                                                    }}
+                                                    name="remember-me"
+                                                    color="primary"
+                                                />
+                                            }
+                                            label={t('Remember Me')}
+                                        />
+
+                                        <Button
+                                            fullWidth
+                                            color="secondary"
+                                            variant="contained"
+                                        >
+                                            {t('Sign In')}
+                                        </Button>
+                                    </Box>
+                                </form>
+                            </Box>
+                        )}
                     </Box>
                 </Box>
             </Grid>
