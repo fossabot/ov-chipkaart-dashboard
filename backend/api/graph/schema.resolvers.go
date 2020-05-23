@@ -6,17 +6,34 @@ package graph
 import (
 	"context"
 	"fmt"
-
+	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/core"
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/graph/generated"
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/graph/model"
 )
 
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
+func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (string, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
+func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
 	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) CancelToken(ctx context.Context, input model.CancelTokenInput) (bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) User(ctx context.Context) (*model.User, error) {
+	r.Resolver.User = model.User{
+		ID:        ,
+		FirstName: "Acho",
+		LastName:  "Arnold",
+		Email:     "arnoldewin@gmail.com",
+	}
 }
 
 // Mutation returns generated.MutationResolver implementation.
