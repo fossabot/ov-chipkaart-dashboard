@@ -6,19 +6,23 @@ type CancelTokenInput struct {
 	Token string `json:"token"`
 }
 
-type Login struct {
-	Email      string `json:"email"`
-	Password   string `json:"password"`
-	RememberMe bool   `json:"rememberMe"`
-	ReCaptcha  string `json:"reCaptcha"`
-}
-
-type NewUser struct {
+type CreateUserInput struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
 	ReCaptcha string `json:"reCaptcha"`
+}
+
+type CreateUserOutput struct {
+	IsCreated bool `json:"isCreated"`
+}
+
+type Login struct {
+	Email      string `json:"email"`
+	Password   string `json:"password"`
+	RememberMe bool   `json:"rememberMe"`
+	ReCaptcha  string `json:"reCaptcha"`
 }
 
 type RefreshTokenInput struct {

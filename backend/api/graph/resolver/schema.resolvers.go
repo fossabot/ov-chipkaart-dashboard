@@ -1,4 +1,4 @@
-package graph
+package resolver
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
@@ -6,12 +6,12 @@ package graph
 import (
 	"context"
 	"fmt"
-	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/core"
+
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/graph/generated"
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/graph/model"
 )
 
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (string, error) {
+func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (string, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -28,12 +28,7 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 }
 
 func (r *queryResolver) User(ctx context.Context) (*model.User, error) {
-	r.Resolver.User = model.User{
-		ID:        ,
-		FirstName: "Acho",
-		LastName:  "Arnold",
-		Email:     "arnoldewin@gmail.com",
-	}
+	return &model.User{}, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

@@ -3,12 +3,16 @@ module github.com/NdoleStudio/ov-chipkaart-dashboard/backend
 go 1.14
 
 require (
+	github.com/99designs/gqlgen v0.11.3
 	github.com/AchoArnold/homework v0.0.0-20200523123832-0ba4303bedc3
 	github.com/NdoleStudio/lfu-cache v1.0.0
 	github.com/davecgh/go-spew v1.1.1
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/getsentry/sentry-go v0.6.1
+	github.com/go-kit/kit v0.10.0
 	github.com/google/uuid v1.1.1
 	github.com/google/wire v0.4.0
+	github.com/gorilla/mux v1.7.4
 	github.com/joho/godotenv v1.3.0
 	github.com/klauspost/compress v1.10.6 // indirect
 	github.com/labstack/gommon v0.3.0
@@ -16,6 +20,7 @@ require (
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/valyala/fasttemplate v1.1.0 // indirect
+	github.com/vektah/gqlparser/v2 v2.0.1
 	go.etcd.io/bbolt v1.3.4 // indirect
 	go.mongodb.org/mongo-driver v1.3.3
 	go.uber.org/ratelimit v0.1.0

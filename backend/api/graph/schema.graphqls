@@ -13,12 +13,16 @@ type Query {
   user: User!
 }
 
-input NewUser {
+input CreateUserInput {
   firstName:String!
   lastName:String!
   email:String!
   password: String!
   reCaptcha: String!
+}
+
+input CreateUserOutput {
+  isCreated: Boolean!
 }
 
 input CancelTokenInput{
@@ -37,7 +41,7 @@ input Login {
 }
 
 type Mutation {
-  createUser(input: NewUser!): String!
+  createUser(input: CreateUserInput!): String!
   login(input: Login!): String!
   cancelToken(input: CancelTokenInput!): Boolean!
   refreshToken(input: RefreshTokenInput!): String!

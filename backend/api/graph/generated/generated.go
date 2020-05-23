@@ -45,7 +45,7 @@ type DirectiveRoot struct {
 type ComplexityRoot struct {
 	Mutation struct {
 		CancelToken  func(childComplexity int, input model.CancelTokenInput) int
-		CreateUser   func(childComplexity int, input model.NewUser) int
+		CreateUser   func(childComplexity int, input model.CreateUserInput) int
 		Login        func(childComplexity int, input model.Login) int
 		RefreshToken func(childComplexity int, input model.RefreshTokenInput) int
 	}
@@ -63,7 +63,7 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	CreateUser(ctx context.Context, input model.NewUser) (string, error)
+	CreateUser(ctx context.Context, input model.CreateUserInput) (string, error)
 	Login(ctx context.Context, input model.Login) (string, error)
 	CancelToken(ctx context.Context, input model.CancelTokenInput) (bool, error)
 	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error)
@@ -109,7 +109,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(model.NewUser)), true
+		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(model.CreateUserInput)), true
 
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
@@ -249,12 +249,16 @@ type Query {
   user: User!
 }
 
-input NewUser {
+input CreateUserInput {
   firstName:String!
   lastName:String!
   email:String!
   password: String!
   reCaptcha: String!
+}
+
+input CreateUserOutput {
+  isCreated: Boolean!
 }
 
 input CancelTokenInput{
@@ -273,7 +277,7 @@ input Login {
 }
 
 type Mutation {
-  createUser(input: NewUser!): String!
+  createUser(input: CreateUserInput!): String!
   login(input: Login!): String!
   cancelToken(input: CancelTokenInput!): Boolean!
   refreshToken(input: RefreshTokenInput!): String!
@@ -302,9 +306,9 @@ func (ec *executionContext) field_Mutation_cancelToken_args(ctx context.Context,
 func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.NewUser
+	var arg0 model.CreateUserInput
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNNewUser2githubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐNewUser(ctx, tmp)
+		arg0, err = ec.unmarshalNCreateUserInput2githubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐCreateUserInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -415,7 +419,7 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateUser(rctx, args["input"].(model.NewUser))
+		return ec.resolvers.Mutation().CreateUser(rctx, args["input"].(model.CreateUserInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1867,44 +1871,8 @@ func (ec *executionContext) unmarshalInputCancelTokenInput(ctx context.Context, 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputLogin(ctx context.Context, obj interface{}) (model.Login, error) {
-	var it model.Login
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "email":
-			var err error
-			it.Email, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "password":
-			var err error
-			it.Password, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "rememberMe":
-			var err error
-			it.RememberMe, err = ec.unmarshalNBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "reCaptcha":
-			var err error
-			it.ReCaptcha, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj interface{}) (model.NewUser, error) {
-	var it model.NewUser
+func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, obj interface{}) (model.CreateUserInput, error) {
+	var it model.CreateUserInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -1930,6 +1898,60 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 		case "password":
 			var err error
 			it.Password, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "reCaptcha":
+			var err error
+			it.ReCaptcha, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateUserOutput(ctx context.Context, obj interface{}) (model.CreateUserOutput, error) {
+	var it model.CreateUserOutput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "isCreated":
+			var err error
+			it.IsCreated, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputLogin(ctx context.Context, obj interface{}) (model.Login, error) {
+	var it model.Login
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "email":
+			var err error
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "password":
+			var err error
+			it.Password, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "rememberMe":
+			var err error
+			it.RememberMe, err = ec.unmarshalNBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2366,6 +2388,10 @@ func (ec *executionContext) unmarshalNCancelTokenInput2githubᚗcomᚋNdoleStudi
 	return ec.unmarshalInputCancelTokenInput(ctx, v)
 }
 
+func (ec *executionContext) unmarshalNCreateUserInput2githubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐCreateUserInput(ctx context.Context, v interface{}) (model.CreateUserInput, error) {
+	return ec.unmarshalInputCreateUserInput(ctx, v)
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
 	return graphql.UnmarshalID(v)
 }
@@ -2382,10 +2408,6 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 
 func (ec *executionContext) unmarshalNLogin2githubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐLogin(ctx context.Context, v interface{}) (model.Login, error) {
 	return ec.unmarshalInputLogin(ctx, v)
-}
-
-func (ec *executionContext) unmarshalNNewUser2githubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐNewUser(ctx context.Context, v interface{}) (model.NewUser, error) {
-	return ec.unmarshalInputNewUser(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNRefreshTokenInput2githubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐRefreshTokenInput(ctx context.Context, v interface{}) (model.RefreshTokenInput, error) {
