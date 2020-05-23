@@ -100,7 +100,7 @@ export default function LandingPage() {
                     <Box width="100%" maxWidth={1000}>
                         <Link
                             className={classes.logo}
-                            to={ROUTE_NAMES.DASHBOARD}
+                            to={ROUTE_NAMES.LANDING_PAGE}
                         >
                             <Logo
                                 backgroundColor={theme.palette.primary.dark}
