@@ -20,4 +20,6 @@ export default {
     Password: 'Password',
     or: 'or',
     'create an account': 'create an account',
+    'Remember Me': 'Remember Me',
+    'Sign In': 'Sign in',
 };

@@ -14,7 +14,11 @@ import Anchor from '@material-ui/core/Link';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
+import GoogleInvisibleCaptcha from '../../components/GoogleInvisibleCaptcha';
+import verticalImage from '../../images/vertical.svg';
+import useTheme from '@material-ui/core/styles/useTheme';
 
+console.log(verticalImage);
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         container: {
@@ -32,15 +36,8 @@ const useStyles = makeStyles((theme: Theme) =>
 
         infoContainer: {
             height: '100vh',
+            backgroundSize: `cover`,
             backgroundColor: theme.palette.primary.dark,
-        },
-
-        auth: {
-            height: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            padding: theme.spacing(3),
-            backgroundColor: theme.palette.primary.contrastText,
         },
 
         card: {
@@ -50,6 +47,7 @@ const useStyles = makeStyles((theme: Theme) =>
         logo: {
             color: theme.palette.primary.dark,
             position: 'absolute',
+            textDecoration: 'none',
         },
 
         title: {
@@ -62,8 +60,21 @@ const useStyles = makeStyles((theme: Theme) =>
             },
         },
 
-        privacyPolicy: {
-            color: theme.palette.grey[700],
+        authContainer: {
+            position: 'relative',
+        },
+
+        authHeader: {
+            position: 'absolute',
+            width: '100%',
+        },
+
+        auth: {
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            padding: theme.spacing(3),
+            backgroundColor: theme.palette.primary.contrastText,
         },
     }),
 );
@@ -71,9 +82,9 @@ const useStyles = makeStyles((theme: Theme) =>
 export default function LandingPage() {
     const classes = useStyles();
     const { t } = useTranslation();
-
+    const theme = useTheme();
     const [state, setState] = useState({
-        signUpActive: false,
+        signUpActive: true,
         rememberMeActive: true,
     });
 
@@ -91,7 +102,9 @@ export default function LandingPage() {
                             className={classes.logo}
                             to={ROUTE_NAMES.DASHBOARD}
                         >
-                            <Logo />
+                            <Logo
+                                backgroundColor={theme.palette.primary.dark}
+                            />
                         </Link>
                         <Box className={classes.info}>
                             <Box
@@ -115,8 +128,17 @@ export default function LandingPage() {
                 </Box>
             </Grid>
             <Grid item xs={4}>
-                <Box width="100%" maxWidth={400}>
-                    <Box p={3} display="flex" justifyContent="flex-end">
+                <Box
+                    width="100%"
+                    className={classes.authContainer}
+                    maxWidth={400}
+                >
+                    <Box
+                        p={3}
+                        display="flex"
+                        className={classes.authHeader}
+                        justifyContent="flex-end"
+                    >
                         <Button
                             variant="outlined"
                             onClick={() => {
@@ -161,6 +183,7 @@ export default function LandingPage() {
                                             required
                                             fullWidth
                                             size="small"
+                                            name="first_name"
                                             label={t('First Name')}
                                             variant="outlined"
                                             autoComplete="given-name"
@@ -169,6 +192,7 @@ export default function LandingPage() {
                                             required
                                             fullWidth
                                             size="small"
+                                            name="last_name"
                                             label={t('Surname')}
                                             variant="outlined"
                                             autoComplete="family-name"
@@ -185,34 +209,14 @@ export default function LandingPage() {
                                             required
                                             fullWidth
                                             size="small"
+                                            name="password"
                                             label={t('Password')}
                                             type="password"
                                             autoComplete="password"
                                             variant="outlined"
                                         />
 
-                                        <Typography
-                                            variant="body2"
-                                            className={classes.privacyPolicy}
-                                        >
-                                            {t(
-                                                'This page is protected by reCAPTCHA and is subject to the Google',
-                                            )}{' '}
-                                            <Anchor
-                                                target="_blank"
-                                                href="https://policies.google.com/privacy"
-                                            >
-                                                {t('Privacy Policy')}
-                                            </Anchor>{' '}
-                                            and{' '}
-                                            <Anchor
-                                                target="_blank"
-                                                href="https://policies.google.com/terms"
-                                            >
-                                                {t('Terms of Service')}
-                                            </Anchor>
-                                            .
-                                        </Typography>
+                                        <GoogleInvisibleCaptcha />
 
                                         <Button
                                             fullWidth
@@ -254,6 +258,7 @@ export default function LandingPage() {
                                             required
                                             fullWidth
                                             size="small"
+                                            name="email"
                                             label={t('Email')}
                                             autoComplete="email"
                                             variant="outlined"
@@ -262,34 +267,14 @@ export default function LandingPage() {
                                             required
                                             fullWidth
                                             size="small"
+                                            name="password"
                                             label={t('Password')}
                                             type="password"
                                             autoComplete="password"
                                             variant="outlined"
                                         />
 
-                                        <Typography
-                                            variant="body2"
-                                            className={classes.privacyPolicy}
-                                        >
-                                            {t(
-                                                'This page is protected by reCAPTCHA and is subject to the Google',
-                                            )}{' '}
-                                            <Anchor
-                                                target="_blank"
-                                                href="https://policies.google.com/privacy"
-                                            >
-                                                {t('Privacy Policy')}
-                                            </Anchor>{' '}
-                                            and{' '}
-                                            <Anchor
-                                                target="_blank"
-                                                href="https://policies.google.com/terms"
-                                            >
-                                                {t('Terms of Service')}
-                                            </Anchor>
-                                            .
-                                        </Typography>
+                                        <GoogleInvisibleCaptcha />
 
                                         <FormControlLabel
                                             control={

@@ -12,7 +12,6 @@ const useStyles = makeStyles((theme: Theme) =>
             shadow: theme.palette.warning.main,
         },
         suffix: {
-            textShadow: `3px 0 ${theme.palette.primary.main}, -3px 0px ${theme.palette.primary.main}`,
             '&::after': {
                 content: '""',
                 width: '80%',
@@ -26,11 +25,25 @@ const useStyles = makeStyles((theme: Theme) =>
     }),
 );
 
-export default function Logo() {
+type LogoProps = {
+    backgroundColor: string;
+};
+
+export default function Logo(props: LogoProps) {
     const classes = useStyles();
     return (
         <Box className={classes.container}>
-            <span className={classes.suffix}>ov-chipkaart</span>
+            <span className={classes.suffix}>
+                ov-chi
+                <span
+                    style={{
+                        textShadow: `3px 0 ${props.backgroundColor}, -3px 0px ${props.backgroundColor}`,
+                    }}
+                >
+                    p
+                </span>
+                kaart
+            </span>
             dashboard
         </Box>
     );
