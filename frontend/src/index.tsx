@@ -5,13 +5,23 @@ import 'minireset.css';
 import { Route, Switch, BrowserRouter as Router } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import './i18n';
+import ROUTE_NAMES from './constants/routes';
+import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+
+const theme = createMuiTheme({});
 
 const routing = (
-    <Router>
-        <Switch>
-            <Route exact path="/" component={LandingPage} />
-        </Switch>
-    </Router>
+    <ThemeProvider theme={theme}>
+        <Router>
+            <Switch>
+                <Route
+                    exact
+                    path={ROUTE_NAMES.LANDING_PAGE}
+                    component={LandingPage}
+                />
+            </Switch>
+        </Router>
+    </ThemeProvider>
 );
 
 ReactDOM.render(routing, document.getElementById('root'));
