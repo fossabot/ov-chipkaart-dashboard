@@ -11,6 +11,13 @@ services:
       - 27017:27017
     volumes:
       - mongodb_data_container:/data/db
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - ./config/redis.conf:/redis.conf
+    command: [ "redis-server", "/redis.conf" ]
 
 volumes:
   mongodb_data_container:

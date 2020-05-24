@@ -10,6 +10,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/getsentry/sentry-go v0.6.1
 	github.com/go-kit/kit v0.10.0
+	github.com/go-redis/redis/v8 v8.0.0-beta.2
 	github.com/google/uuid v1.1.1
 	github.com/google/wire v0.4.0
 	github.com/gorilla/mux v1.7.4
@@ -21,7 +22,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/valyala/fasttemplate v1.1.0 // indirect
 	github.com/vektah/gqlparser/v2 v2.0.1
-	go.etcd.io/bbolt v1.3.4 // indirect
 	go.mongodb.org/mongo-driver v1.3.3
 	go.uber.org/ratelimit v0.1.0
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37 // indirect

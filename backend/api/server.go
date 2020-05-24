@@ -6,6 +6,9 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/cache"
+	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/cache/redis"
+
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/database"
@@ -35,6 +38,10 @@ func main() {
 		port = defaultPort
 	}
 
+	client := initializeCache()
+	client.Set("how", "fine", 0)
+	log.Println(client.Get("how"))
+
 	router := mux.NewRouter()
 
 	router.Use(middlewares.LoggingMiddleware(goKitLog.NewLogfmtLogger(os.Stdout)))
@@ -59,10 +66,12 @@ func initializeGraphQLServer() *handler.Server {
 func initializeResolver() *resolver.Resolver {
 	return resolver.NewResolver(initializeDB())
 }
+
 func initializeJWTService() jwt.Service {
 	secret := os.Getenv("JWT_SECRET")
-	return jwt.NewService(secret)
+	return jwt.NewService(secret, initializeCache())
 }
+
 func initializeDB() database.DB {
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(os.Getenv("MONGODB_URI")))
 	if err != nil {
@@ -72,4 +81,12 @@ func initializeDB() database.DB {
 	db := client.Database(os.Getenv("MONGODB_DB_NAME"))
 
 	return mongodb.NewMongoDB(db)
+}
+
+func initializeCache() cache.Cache {
+	return redis.NewClient(redis.Options{
+		Address:  os.Getenv("REDIS_ADDRESS"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
+	})
 }
