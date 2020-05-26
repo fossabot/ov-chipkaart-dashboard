@@ -5,7 +5,7 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/go-kit/kit/log"
+	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/shared/logger"
 )
 
 // responseWriter is a minimal wrapper for http.ResponseWriter that allows the
@@ -39,7 +39,7 @@ func (rw *responseWriter) WriteHeader(code int) {
 }
 
 // LoggingMiddleware logs the incoming HTTP request & its duration.
-func LoggingMiddleware(logger log.Logger) func(http.Handler) http.Handler {
+func LoggingMiddleware(logger logger.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			defer func() {
@@ -56,6 +56,7 @@ func LoggingMiddleware(logger log.Logger) func(http.Handler) http.Handler {
 			wrapped := wrapResponseWriter(w)
 			next.ServeHTTP(wrapped, r)
 			_ = logger.Log(
+				"at", time.Now().Format(time.RFC3339),
 				"status", wrapped.status,
 				"method", r.Method,
 				"path", r.URL.EscapedPath(),

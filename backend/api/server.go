@@ -4,6 +4,11 @@ import (
 	"context"
 	"log"
 	"net/http"
+
+	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/middlewares"
+	"github.com/gorilla/mux"
+
 	"os"
 
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/graph/validator"
@@ -17,14 +22,11 @@ import (
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/cache/redis"
 
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/database"
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/database/mongodb"
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/graph/generated"
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/graph/resolver"
-	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/middlewares"
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/services/jwt"
-	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -43,8 +45,6 @@ func main() {
 	if port == "" {
 		port = defaultPort
 	}
-
-	initializeLogger()
 
 	router := mux.NewRouter()
 
