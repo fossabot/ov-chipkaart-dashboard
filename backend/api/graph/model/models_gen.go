@@ -15,7 +15,8 @@ type CreateUserInput struct {
 }
 
 type CreateUserOutput struct {
-	IsCreated bool `json:"isCreated"`
+	User  *User  `json:"user"`
+	Token *Token `json:"token"`
 }
 
 type Login struct {
@@ -29,9 +30,15 @@ type RefreshTokenInput struct {
 	Token string `json:"token"`
 }
 
+type Token struct {
+	Value string `json:"value"`
+}
+
 type User struct {
 	ID        string `json:"id"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	Email     string `json:"email"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
 }

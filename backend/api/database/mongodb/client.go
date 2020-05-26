@@ -1,6 +1,7 @@
 package mongodb
 
 import (
+	"context"
 	"time"
 
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/database"
@@ -14,6 +15,15 @@ const (
 type repository struct {
 	db         *mongo.Database
 	collection string
+}
+
+func (repository repository) Collection() *mongo.Collection {
+	return repository.db.Collection(repository.collection)
+}
+
+func (repository repository) DefaultTimeoutContext() context.Context {
+	ctx, _ := context.WithTimeout(context.Background(), dbOperationTimeout)
+	return ctx
 }
 
 // MongoDB is the struct for mongodb

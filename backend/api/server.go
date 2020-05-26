@@ -6,6 +6,13 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/graph/validator"
+	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/graph/validator/govalidator"
+	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/services/password"
+	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/shared/errorhandler"
+	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/shared/logger"
+	"github.com/getsentry/sentry-go"
+
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/cache"
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/cache/redis"
 
@@ -17,7 +24,6 @@ import (
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/graph/resolver"
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/middlewares"
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/services/jwt"
-	goKitLog "github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
@@ -38,13 +44,11 @@ func main() {
 		port = defaultPort
 	}
 
-	client := initializeCache()
-	client.Set("how", "fine", 0)
-	log.Println(client.Get("how"))
+	initializeLogger()
 
 	router := mux.NewRouter()
 
-	router.Use(middlewares.LoggingMiddleware(goKitLog.NewLogfmtLogger(os.Stdout)))
+	router.Use(middlewares.LoggingMiddleware(initializeLogger()))
 	router.Use(middlewares.EnrichUserID(initializeJWTService()))
 
 	router.HandleFunc("/", playground.Handler("GraphQL playground", "/query"))
@@ -64,7 +68,22 @@ func initializeGraphQLServer() *handler.Server {
 	)
 }
 func initializeResolver() *resolver.Resolver {
-	return resolver.NewResolver(initializeDB())
+	return resolver.NewResolver(
+		initializeDB(),
+		initializeValidator(),
+		initializePasswordService(),
+		initializeErrorHandler(),
+		initializeLogger(),
+		initializeJWTService(),
+	)
+}
+
+func initializeValidator() validator.Validator {
+	return govalidator.New(initializeDB())
+}
+
+func initializePasswordService() password.Service {
+	return password.NewBcryptService()
 }
 
 func initializeJWTService() jwt.Service {
@@ -89,4 +108,24 @@ func initializeCache() cache.Cache {
 		Password: os.Getenv("REDIS_PASSWORD"),
 		DB:       0,
 	})
+}
+
+func initializeLogger() logger.Logger {
+	return logger.NewGoKitLogger(os.Stdout)
+}
+
+func initializeErrorHandler() errorhandler.ErrorHandler {
+	errHandler, err := errorhandler.NewSentryErrorHandler(sentry.ClientOptions{
+		// Either set your DSN here or set the SENTRY_DSN environment variable.
+		Dsn: os.Getenv("SENTRY_DSN"),
+		// Enable printing of SDK debug messages.
+		// Useful when getting started or trying to figure something out.
+		Debug: true,
+	})
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	return errHandler
 }

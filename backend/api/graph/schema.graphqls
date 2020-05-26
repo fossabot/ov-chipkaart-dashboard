@@ -7,6 +7,12 @@ type User {
   firstName:String!
   lastName:String!
   email:String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Token {
+  value: String!
 }
 
 type Query {
@@ -21,8 +27,9 @@ input CreateUserInput {
   reCaptcha: String!
 }
 
-input CreateUserOutput {
-  isCreated: Boolean!
+type CreateUserOutput {
+  user: User!
+  token: Token!
 }
 
 input CancelTokenInput{
@@ -41,7 +48,7 @@ input Login {
 }
 
 type Mutation {
-  createUser(input: CreateUserInput!): String!
+  createUser(input: CreateUserInput!): CreateUserOutput!
   login(input: Login!): String!
   cancelToken(input: CancelTokenInput!): Boolean!
   refreshToken(input: RefreshTokenInput!): String!

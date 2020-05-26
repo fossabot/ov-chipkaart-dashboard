@@ -3,10 +3,11 @@ package jwt
 import (
 	"time"
 
+	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/shared/id"
+
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/cache"
 	"github.com/pkg/errors"
 
-	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/shared"
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -22,20 +23,20 @@ var (
 
 // Service is a new instance of the JWT service
 type Service struct {
-	secret string
+	secret []byte
 	cache  cache.Cache
 }
 
 // NewService creates a new instance of the JWT service
 func NewService(secret string, cache cache.Cache) Service {
 	return Service{
-		secret: secret,
+		secret: []byte(secret),
 		cache:  cache,
 	}
 }
 
 //GenerateTokenForUserID generates a jwt token and assign a email to it's claims and return it
-func (service Service) GenerateTokenForUserID(UserID shared.TransactionID) (result string, err error) {
+func (service Service) GenerateTokenForUserID(UserID id.ID) (result string, err error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	/* Create a map to store our claims */
@@ -74,7 +75,7 @@ func (service Service) InvalidateToken(tokenString string) (err error) {
 }
 
 //GetUserIDFromToken parses a jwt token and returns the email it it's claims
-func (service Service) GetUserIDFromToken(tokenString string) (userID shared.TransactionID, err error) {
+func (service Service) GetUserIDFromToken(tokenString string) (userID id.ID, err error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return service.secret, nil
 	})
@@ -93,5 +94,5 @@ func (service Service) GetUserIDFromToken(tokenString string) (userID shared.Tra
 		return userID, err
 	}
 
-	return shared.NewTransactionIDFromString(claims[keyUserID].(string))
+	return id.FromString(claims[keyUserID].(string))
 }
