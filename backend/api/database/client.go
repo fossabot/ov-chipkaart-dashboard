@@ -3,7 +3,7 @@ package database
 import "github.com/pkg/errors"
 
 var (
-	// ErrEntityNotFound is thrown when the entity does not exist
+	// ErrEntityNotFound is returned when an entity does not exist in the database
 	ErrEntityNotFound = errors.New("entity not found")
 )
 
