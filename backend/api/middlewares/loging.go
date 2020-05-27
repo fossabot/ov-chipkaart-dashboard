@@ -5,6 +5,8 @@ import (
 	"runtime/debug"
 	"time"
 
+	internalTime "github.com/NdoleStudio/ov-chipkaart-dashboard/backend/shared/time"
+
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/shared/logger"
 )
 
@@ -56,7 +58,7 @@ func LoggingMiddleware(logger logger.Logger) func(http.Handler) http.Handler {
 			wrapped := wrapResponseWriter(w)
 			next.ServeHTTP(wrapped, r)
 			_ = logger.Log(
-				"at", time.Now().Format(time.RFC3339),
+				"at", time.Now().Format(internalTime.DefaultFormat),
 				"status", wrapped.status,
 				"method", r.Method,
 				"path", r.URL.EscapedPath(),
