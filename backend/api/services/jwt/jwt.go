@@ -23,15 +23,17 @@ var (
 
 // Service is a new instance of the JWT service
 type Service struct {
-	secret []byte
-	cache  cache.Cache
+	secret      []byte
+	cache       cache.Cache
+	sessionDays int
 }
 
 // NewService creates a new instance of the JWT service
-func NewService(secret string, cache cache.Cache) Service {
+func NewService(secret string, cache cache.Cache, sessionDays int) Service {
 	return Service{
-		secret: []byte(secret),
-		cache:  cache,
+		secret:      []byte(secret),
+		cache:       cache,
+		sessionDays: sessionDays,
 	}
 }
 
@@ -43,7 +45,7 @@ func (service Service) GenerateTokenForUserID(UserID id.ID) (result string, err 
 	claims := token.Claims.(jwt.MapClaims)
 
 	/* Set token claims */
-	claims[keyExp] = time.Now().AddDate(0, 0, 14)
+	claims[keyExp] = time.Now().AddDate(0, 0, service.sessionDays)
 	claims["nbf"] = time.Now().Unix()
 	claims["iat"] = time.Now().Unix()
 	claims[keyUserID] = UserID.String()

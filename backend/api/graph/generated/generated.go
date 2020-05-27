@@ -43,7 +43,7 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	CreateUserOutput struct {
+	AuthOutput struct {
 		Token func(childComplexity int) int
 		User  func(childComplexity int) int
 	}
@@ -51,7 +51,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CancelToken  func(childComplexity int, input model.CancelTokenInput) int
 		CreateUser   func(childComplexity int, input model.CreateUserInput) int
-		Login        func(childComplexity int, input model.Login) int
+		Login        func(childComplexity int, input model.LoginInput) int
 		RefreshToken func(childComplexity int, input model.RefreshTokenInput) int
 	}
 
@@ -74,8 +74,8 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	CreateUser(ctx context.Context, input model.CreateUserInput) (*model.CreateUserOutput, error)
-	Login(ctx context.Context, input model.Login) (string, error)
+	CreateUser(ctx context.Context, input model.CreateUserInput) (*model.AuthOutput, error)
+	Login(ctx context.Context, input model.LoginInput) (*model.AuthOutput, error)
 	CancelToken(ctx context.Context, input model.CancelTokenInput) (bool, error)
 	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error)
 }
@@ -98,19 +98,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "CreateUserOutput.token":
-		if e.complexity.CreateUserOutput.Token == nil {
+	case "AuthOutput.token":
+		if e.complexity.AuthOutput.Token == nil {
 			break
 		}
 
-		return e.complexity.CreateUserOutput.Token(childComplexity), true
+		return e.complexity.AuthOutput.Token(childComplexity), true
 
-	case "CreateUserOutput.user":
-		if e.complexity.CreateUserOutput.User == nil {
+	case "AuthOutput.user":
+		if e.complexity.AuthOutput.User == nil {
 			break
 		}
 
-		return e.complexity.CreateUserOutput.User(childComplexity), true
+		return e.complexity.AuthOutput.User(childComplexity), true
 
 	case "Mutation.cancelToken":
 		if e.complexity.Mutation.CancelToken == nil {
@@ -146,7 +146,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Login(childComplexity, args["input"].(model.Login)), true
+		return e.complexity.Mutation.Login(childComplexity, args["input"].(model.LoginInput)), true
 
 	case "Mutation.refreshToken":
 		if e.complexity.Mutation.RefreshToken == nil {
@@ -309,7 +309,7 @@ input CreateUserInput {
   reCaptcha: String!
 }
 
-type CreateUserOutput {
+type AuthOutput {
   user: User!
   token: Token!
 }
@@ -322,7 +322,7 @@ input RefreshTokenInput{
   token: String!
 }
 
-input Login {
+input LoginInput {
   email: String!
   password: String!
   rememberMe: Boolean!
@@ -330,8 +330,8 @@ input Login {
 }
 
 type Mutation {
-  createUser(input: CreateUserInput!): CreateUserOutput!
-  login(input: Login!): String!
+  createUser(input: CreateUserInput!): AuthOutput!
+  login(input: LoginInput!): AuthOutput!
   cancelToken(input: CancelTokenInput!): Boolean!
   refreshToken(input: RefreshTokenInput!): String!
 }`, BuiltIn: false},
@@ -373,9 +373,9 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.Login
+	var arg0 model.LoginInput
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNLogin2githubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐLogin(ctx, tmp)
+		arg0, err = ec.unmarshalNLoginInput2githubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐLoginInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -448,7 +448,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _CreateUserOutput_user(ctx context.Context, field graphql.CollectedField, obj *model.CreateUserOutput) (ret graphql.Marshaler) {
+func (ec *executionContext) _AuthOutput_user(ctx context.Context, field graphql.CollectedField, obj *model.AuthOutput) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -456,7 +456,7 @@ func (ec *executionContext) _CreateUserOutput_user(ctx context.Context, field gr
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "CreateUserOutput",
+		Object:   "AuthOutput",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -482,7 +482,7 @@ func (ec *executionContext) _CreateUserOutput_user(ctx context.Context, field gr
 	return ec.marshalNUser2ᚖgithubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _CreateUserOutput_token(ctx context.Context, field graphql.CollectedField, obj *model.CreateUserOutput) (ret graphql.Marshaler) {
+func (ec *executionContext) _AuthOutput_token(ctx context.Context, field graphql.CollectedField, obj *model.AuthOutput) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -490,7 +490,7 @@ func (ec *executionContext) _CreateUserOutput_token(ctx context.Context, field g
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "CreateUserOutput",
+		Object:   "AuthOutput",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -552,9 +552,9 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.CreateUserOutput)
+	res := resTmp.(*model.AuthOutput)
 	fc.Result = res
-	return ec.marshalNCreateUserOutput2ᚖgithubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐCreateUserOutput(ctx, field.Selections, res)
+	return ec.marshalNAuthOutput2ᚖgithubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐAuthOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -581,7 +581,7 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Login(rctx, args["input"].(model.Login))
+		return ec.resolvers.Mutation().Login(rctx, args["input"].(model.LoginInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -593,9 +593,9 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*model.AuthOutput)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNAuthOutput2ᚖgithubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐAuthOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_cancelToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2136,8 +2136,8 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputLogin(ctx context.Context, obj interface{}) (model.Login, error) {
-	var it model.Login
+func (ec *executionContext) unmarshalInputLoginInput(ctx context.Context, obj interface{}) (model.LoginInput, error) {
+	var it model.LoginInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -2198,24 +2198,24 @@ func (ec *executionContext) unmarshalInputRefreshTokenInput(ctx context.Context,
 
 // region    **************************** object.gotpl ****************************
 
-var createUserOutputImplementors = []string{"CreateUserOutput"}
+var authOutputImplementors = []string{"AuthOutput"}
 
-func (ec *executionContext) _CreateUserOutput(ctx context.Context, sel ast.SelectionSet, obj *model.CreateUserOutput) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, createUserOutputImplementors)
+func (ec *executionContext) _AuthOutput(ctx context.Context, sel ast.SelectionSet, obj *model.AuthOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, authOutputImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("CreateUserOutput")
+			out.Values[i] = graphql.MarshalString("AuthOutput")
 		case "user":
-			out.Values[i] = ec._CreateUserOutput_user(ctx, field, obj)
+			out.Values[i] = ec._AuthOutput_user(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "token":
-			out.Values[i] = ec._CreateUserOutput_token(ctx, field, obj)
+			out.Values[i] = ec._AuthOutput_token(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2644,6 +2644,20 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) marshalNAuthOutput2githubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐAuthOutput(ctx context.Context, sel ast.SelectionSet, v model.AuthOutput) graphql.Marshaler {
+	return ec._AuthOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAuthOutput2ᚖgithubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐAuthOutput(ctx context.Context, sel ast.SelectionSet, v *model.AuthOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._AuthOutput(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	return graphql.UnmarshalBoolean(v)
 }
@@ -2666,20 +2680,6 @@ func (ec *executionContext) unmarshalNCreateUserInput2githubᚗcomᚋNdoleStudio
 	return ec.unmarshalInputCreateUserInput(ctx, v)
 }
 
-func (ec *executionContext) marshalNCreateUserOutput2githubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐCreateUserOutput(ctx context.Context, sel ast.SelectionSet, v model.CreateUserOutput) graphql.Marshaler {
-	return ec._CreateUserOutput(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNCreateUserOutput2ᚖgithubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐCreateUserOutput(ctx context.Context, sel ast.SelectionSet, v *model.CreateUserOutput) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._CreateUserOutput(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
 	return graphql.UnmarshalID(v)
 }
@@ -2694,8 +2694,8 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNLogin2githubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐLogin(ctx context.Context, v interface{}) (model.Login, error) {
-	return ec.unmarshalInputLogin(ctx, v)
+func (ec *executionContext) unmarshalNLoginInput2githubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐLoginInput(ctx context.Context, v interface{}) (model.LoginInput, error) {
+	return ec.unmarshalInputLoginInput(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNRefreshTokenInput2githubᚗcomᚋNdoleStudioᚋovᚑchipkaartᚑdashboardᚋbackendᚋapiᚋgraphᚋmodelᚐRefreshTokenInput(ctx context.Context, v interface{}) (model.RefreshTokenInput, error) {

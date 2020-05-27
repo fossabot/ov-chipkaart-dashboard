@@ -17,8 +17,8 @@
 - [X] Create ability to process NS transactions (Dal Voordeel)
 - [X] Create ability to process NS transactions with 20% discount with weekends (Altijd voordeel)
 - [X] Create ability to filter all off peak NS transactions (Dal Vrij)
-- [ ] Create Frontend interface
-- [ ] Create API for frontend 
+- [X] Create Frontend interface
+- [ ] Add validation erros for sign up and sign in
 - [ ] Write Tests
 
 ### V.15

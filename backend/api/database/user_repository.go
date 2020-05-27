@@ -9,4 +9,5 @@ import (
 type UserRepository interface {
 	Store(user entities.User) error
 	FindByID(userID id.ID) (*entities.User, error)
+	FindByEmail(email string) (*entities.User, error)
 }

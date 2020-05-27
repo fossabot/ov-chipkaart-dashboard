@@ -20,3 +20,8 @@ func New(db database.DB) validator.Validator {
 func (validator GoValidator) ValidateCreateUserInput(input model.CreateUserInput) (result validator.ValidationResult) {
 	return result
 }
+
+// ValidateLoginInput validates the login input
+func (validator GoValidator) ValidateLoginInput(input model.LoginInput) (result validator.ValidationResult) {
+	return result
+}

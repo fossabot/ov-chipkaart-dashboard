@@ -2,6 +2,11 @@
 
 package model
 
+type AuthOutput struct {
+	User  *User  `json:"user"`
+	Token *Token `json:"token"`
+}
+
 type CancelTokenInput struct {
 	Token string `json:"token"`
 }
@@ -14,12 +19,7 @@ type CreateUserInput struct {
 	ReCaptcha string `json:"reCaptcha"`
 }
 
-type CreateUserOutput struct {
-	User  *User  `json:"user"`
-	Token *Token `json:"token"`
-}
-
-type Login struct {
+type LoginInput struct {
 	Email      string `json:"email"`
 	Password   string `json:"password"`
 	RememberMe bool   `json:"rememberMe"`

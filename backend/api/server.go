@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/NdoleStudio/ov-chipkaart-dashboard/backend/api/middlewares"
@@ -87,8 +88,16 @@ func initializePasswordService() password.Service {
 }
 
 func initializeJWTService() jwt.Service {
-	secret := os.Getenv("JWT_SECRET")
-	return jwt.NewService(secret, initializeCache())
+	sessionDays, err := strconv.Atoi(os.Getenv("AUTH_SESSION_DAYS"))
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	if sessionDays < 1 {
+		log.Fatal("AUTH_SESSION_DAYS cannot be < 1")
+	}
+
+	return jwt.NewService(os.Getenv("JWT_SECRET"), initializeCache(), sessionDays)
 }
 
 func initializeDB() database.DB {

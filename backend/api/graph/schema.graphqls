@@ -27,7 +27,7 @@ input CreateUserInput {
   reCaptcha: String!
 }
 
-type CreateUserOutput {
+type AuthOutput {
   user: User!
   token: Token!
 }
@@ -40,7 +40,7 @@ input RefreshTokenInput{
   token: String!
 }
 
-input Login {
+input LoginInput {
   email: String!
   password: String!
   rememberMe: Boolean!
@@ -48,8 +48,8 @@ input Login {
 }
 
 type Mutation {
-  createUser(input: CreateUserInput!): CreateUserOutput!
-  login(input: Login!): String!
+  createUser(input: CreateUserInput!): AuthOutput!
+  login(input: LoginInput!): AuthOutput!
   cancelToken(input: CancelTokenInput!): Boolean!
   refreshToken(input: RefreshTokenInput!): String!
 }
